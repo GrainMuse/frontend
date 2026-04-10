@@ -1,0 +1,220 @@
+/* ============================================================
+   GRAIN MUSE — Global Design System
+   Aesthetic: Warm Organic Luxury · Editorial · Botanical
+   ============================================================ */
+
+/* ── Design Tokens ─────────────────────────────────────────── */
+:root {
+  /* Core Palette */
+  --gm-cream:       #FAF4EA;
+  --gm-parchment:   #F0E6D0;
+  --gm-warm:        #E8D9BE;
+  --gm-mist:        #D5C8AF;
+  --gm-gold:        #BF9A56;
+  --gm-amber:       #D4A843;
+  --gm-rust:        #B05A30;
+  --gm-earth:       #7A5235;
+  --gm-bark:        #4A3020;
+  --gm-deep:        #2C1A10;
+  --gm-moss:        #4E6040;
+  --gm-sage:        #7A9068;
+  --gm-sage-light:  #A8C090;
+
+  /* Semantic */
+  --color-bg:       var(--gm-cream);
+  --color-surface:  var(--gm-parchment);
+  --color-border:   var(--gm-mist);
+  --color-text:     var(--gm-deep);
+  --color-muted:    var(--gm-earth);
+  --color-accent:   var(--gm-gold);
+  --color-highlight:var(--gm-amber);
+
+  /* Typography */
+  --font-display:   'Cormorant Garamond', Georgia, serif;
+  --font-body:      'Outfit', system-ui, sans-serif;
+  --font-italic:    'Libre Baskerville', Georgia, serif;
+
+  /* Spacing Scale */
+  --space-xs:  4px;
+  --space-sm:  8px;
+  --space-md:  16px;
+  --space-lg:  24px;
+  --space-xl:  40px;
+  --space-2xl: 64px;
+  --space-3xl: 96px;
+  --space-4xl: 128px;
+
+  /* Layout */
+  --container-max:  1360px;
+  --container-pad:  clamp(20px, 5vw, 80px);
+  --nav-height:     80px;
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-pill: 100px;
+
+  /* Shadows */
+  --shadow-sm:  0 2px 8px rgba(44,26,16,0.06);
+  --shadow-md:  0 6px 24px rgba(44,26,16,0.10);
+  --shadow-lg:  0 16px 48px rgba(44,26,16,0.14);
+  --shadow-xl:  0 32px 80px rgba(44,26,16,0.18);
+
+  /* Transitions */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out:    cubic-bezier(0.0, 0, 0.2, 1);
+  --t-fast:   150ms;
+  --t-base:   280ms;
+  --t-slow:   480ms;
+  --t-slower: 700ms;
+}
+
+/* ── Reset & Base ──────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Grain texture overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.5;
+}
+
+img, video { max-width: 100%; display: block; }
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; border: none; background: none; font-family: inherit; }
+ul, ol { list-style: none; }
+input, textarea, select { font-family: inherit; }
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--gm-gold);
+  outline-offset: 3px;
+}
+
+/* Selection */
+::selection {
+  background: var(--gm-amber);
+  color: var(--gm-deep);
+}
+
+/* ── Typography ────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--gm-deep);
+}
+
+.display-xl {
+  font-size: clamp(3.5rem, 7vw, 8rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.0;
+}
+.display-lg {
+  font-size: clamp(2.8rem, 5.5vw, 6rem);
+  font-weight: 300;
+  line-height: 1.05;
+}
+.display-md {
+  font-size: clamp(2rem, 4vw, 4rem);
+  font-weight: 300;
+  line-height: 1.1;
+}
+.display-sm {
+  font-size: clamp(1.5rem, 2.5vw, 2.4rem);
+  font-weight: 400;
+  line-height: 1.2;
+}
+.label-text {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gm-gold);
+}
+.body-lg {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--gm-earth);
+}
+.body-sm {
+  font-size: 0.875rem;
+  line-height: 1.75;
+  color: var(--gm-earth);
+}
+
+/* ── Layout ────────────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+
+.section-pad {
+  padding-block: var(--space-4xl);
+}
+.section-pad-sm {
+  padding-block: var(--space-2xl);
+}
+
+/* ── Custom Scrollbar ──────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--gm-parchment); }
+::-webkit-scrollbar-thumb { background: var(--gm-gold); border-radius: 3px; }
+
+/* ── Utility Classes ───────────────────────────────────────── */
+.italic { font-style: italic; font-family: var(--font-display); }
+.gold { color: var(--gm-gold); }
+.earth { color: var(--gm-earth); }
+.cream { color: var(--gm-cream); }
+
+/* ── Page Transition Wrapper ───────────────────────────────── */
+.page-enter {
+  opacity: 0;
+  transform: translateY(16px);
+}
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--t-slow) var(--ease-out),
+              transform var(--t-slow) var(--ease-out);
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  :root {
+    --space-4xl: 80px;
+    --space-3xl: 64px;
+    --space-2xl: 48px;
+    --nav-height: 68px;
+  }
+}

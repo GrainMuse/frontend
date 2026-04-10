@@ -1,0 +1,18 @@
+.header { max-width: 760px; }
+.center { margin-inline: auto; text-align: center; }
+.center .eyebrow { justify-content: center; }
+
+.eyebrow { margin-bottom: var(--space-md); }
+
+.title {
+  color: var(--gm-deep);
+  margin-bottom: var(--space-md);
+}
+.light .title { color: var(--gm-cream); }
+
+.subtitle {
+  color: var(--gm-earth);
+  max-width: 600px;
+}
+.center .subtitle { margin-inline: auto; }
+.light .subtitle { color: rgba(250,244,234,0.65); }

@@ -1,0 +1,39 @@
+.page {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  background: var(--gm-cream);
+}
+.inner {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+}
+.code {
+  font-family: var(--font-display);
+  font-size: clamp(6rem, 15vw, 12rem);
+  font-weight: 300;
+  color: var(--gm-warm);
+  line-height: 1;
+}
+.title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  font-weight: 300;
+  color: var(--gm-deep);
+}
+.desc {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--gm-earth);
+  max-width: 440px;
+}
+.actions {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: var(--space-lg);
+}
