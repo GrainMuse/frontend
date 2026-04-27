@@ -11,7 +11,7 @@ export const COMPANY = {
   email: 'trade@grainmuse.net',
   tradeEmail: 'trade@grainmuse.net',
   phone1: '+94 729 839 172',
-  phone2: '+94 766 142 802',
+  phone2: '+94 71 366 3434',
   location: '119, Kimbulapitiya, Negombo',
   hours: 'Mon–Fri, 8am–5pm IST',
   socials: {
