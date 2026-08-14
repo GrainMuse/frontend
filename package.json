@@ -7,18 +7,29 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "test:contact": "node --test supabase/functions/submit-contact/validation.test.js",
+    "test:deployment": "node --test scripts/supabase-staging-preflight.test.mjs",
+    "supabase:start": "supabase start --exclude logflare,vector",
+    "supabase:start:full": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:reset": "supabase db reset",
+    "supabase:test": "supabase test db",
+    "supabase:lint": "supabase db lint --local --level warning",
+    "supabase:status": "supabase status",
+    "supabase:functions": "supabase functions serve --env-file supabase/functions/.env.local --no-verify-jwt",
+    "supabase:preflight:staging": "node scripts/supabase-staging-preflight.mjs"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
+    "@supabase/supabase-js": "^2.112.3",
     "dotenv": "^17.4.1",
     "framer-motion": "^11.3.0",
     "lucide-react": "^0.383.0",
-    "nodemailer": "^8.0.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-helmet-async": "^3.0.0",
-    "react-router-dom": "^6.26.0",
+    "react-router-dom": "6.30.4",
     "sitemap": "^8.0.3"
   },
   "devDependencies": {
@@ -29,6 +40,7 @@
     "eslint-plugin-react": "^7.34.3",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
+    "supabase": "2.114.0",
     "vite": "^5.3.4"
   }
 }

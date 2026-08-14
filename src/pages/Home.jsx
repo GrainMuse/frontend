@@ -5,18 +5,11 @@ import Marquee from "../components/common/Marquee";
 import ProductCard from "../components/common/ProductCard";
 import SectionHeader from "../components/ui/SectionHeader";
 import AnimatedCounter from "../components/ui/AnimatedCounter";
-import { PRODUCTS, PRODUCT_CATEGORIES, VALUES, COMPANY } from "../data";
+import { useContent } from "../context/contentStore";
 import { getHeroImage } from "../images/imageRegistry";
 import SEOHead from "../components/common/SEOHead";
 import styles from "./Home.module.css";
 import { useState } from "react";
-
-const riceProducts = PRODUCTS.filter(
-  (p) => p.category === PRODUCT_CATEGORIES.RICE,
-);
-const teaProducts = PRODUCTS.filter(
-  (p) => p.category === PRODUCT_CATEGORIES.TEA,
-);
 
 const WHY_CARDS = [
   {
@@ -48,6 +41,15 @@ const WHY_CARDS = [
 export default function Home() {
   useScrollReveal([]);
   const [activeTab, setActiveTab] = useState("rice");
+  const {
+    products,
+    company,
+    values,
+    loading: contentLoading,
+    error: contentError,
+  } = useContent();
+  const riceProducts = products.filter((product) => product.category === "rice");
+  const teaProducts = products.filter((product) => product.category === "tea");
   const displayProducts = activeTab === "rice" ? riceProducts : teaProducts;
 
   useScrollReveal([activeTab]);
@@ -63,7 +65,7 @@ export default function Home() {
         <div className={styles.heroBrand}>
           <div className={styles.heroLogoMark}>
             <LogoImage
-              slug={COMPANY.logo}
+              slug={company.logo}
               alt={"logo"}
               className={styles.logoImg}
             />
@@ -162,7 +164,7 @@ export default function Home() {
                 subtitle="At Grain Muse, we believe that convenience should never come at the cost of quality. Every product begins with carefully sourced ingredients, whole grains, hand-picked herbs, and natural seasonings that honour tradition."
               />
               <div className={styles.valuesGrid}>
-                {VALUES.map((v) => (
+                {values.map((v) => (
                   <div key={v.title} className={`${styles.valueItem} sr`}>
                     <span className={styles.valueIcon}>{v.icon}</span>
                     <div>
@@ -207,12 +209,12 @@ export default function Home() {
             {[
               {
                 key: "rice",
-                label: "🍚 Instant Fried Rice",
+                label: "Instant Fried Rice",
                 count: riceProducts.length,
               },
               {
                 key: "tea",
-                label: "🫖 Herbal Teas",
+                label: "Herbal Teas",
                 count: teaProducts.length,
               },
             ].map(({ key, label, count }) => (
@@ -230,6 +232,8 @@ export default function Home() {
           </div>
 
           <div className={styles.productsGrid}>
+            {contentLoading && <p role="status">Loading products…</p>}
+            {contentError && <p role="alert">{contentError}</p>}
             {displayProducts?.map((p, i) => (
               <ProductCard key={p.id} product={p} dark index={i} />
             ))}
@@ -237,7 +241,7 @@ export default function Home() {
 
           <div className={`${styles.productsFooter} sr`}>
             <Link to="/products" className="btn btn-gold">
-              View All 7 Products
+              View All {products.length} Products
               <ArrowRight size={15} />
             </Link>
           </div>
@@ -594,7 +598,7 @@ function AboutVisual() {
         </div>
       </div>
       <div className={styles.aboutCard3}>
-        <p className={styles.aboutCard3Text}>"Crafted with intention"</p>
+        <p className={styles.aboutCard3Text}>&ldquo;Crafted with intention&rdquo;</p>
       </div>
     </div>
   );

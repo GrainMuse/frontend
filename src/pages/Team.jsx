@@ -12,7 +12,8 @@ import {
 import { Link } from "react-router-dom";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import PageHero from "../components/ui/PageHero";
-import { TEAM_MEMBERS, DEPT_COLORS } from "../data";
+import { DEPT_COLORS } from "../data";
+import { useContent } from "../context/contentStore";
 import { getTeamImage } from "../images/imageRegistry";
 import SEOHead from "../components/common/SEOHead";
 import styles from "./Team.module.css";
@@ -20,8 +21,9 @@ import styles from "./Team.module.css";
 export default function Team() {
   useScrollReveal([]);
   const [selected, setSelected] = useState(null);
+  const { teamMembers, loading, error, reload } = useContent();
 
-  const member = selected ? TEAM_MEMBERS.find((m) => m.id === selected) : null;
+  const member = selected ? teamMembers.find((m) => m.id === selected) : null;
 
   return (
     <>
@@ -43,7 +45,7 @@ export default function Team() {
           {[
             {
               icon: <Users size={18} />,
-              value: TEAM_MEMBERS.length,
+              value: teamMembers.length,
               label: "Team Members",
             },
             {
@@ -67,7 +69,16 @@ export default function Team() {
       <section className={`section-pad ${styles.teamSection}`}>
         <div className="container">
           <div className={styles.teamGrid}>
-            {TEAM_MEMBERS.map((m, i) => (
+            {loading && <p role="status">Loading team members…</p>}
+            {error && (
+              <div role="alert">
+                <p>{error}</p>
+                <button type="button" className="btn btn-outline" onClick={reload}>
+                  Try Again
+                </button>
+              </div>
+            )}
+            {teamMembers.map((m, i) => (
               <MemberCard
                 key={m.id}
                 member={m}
@@ -153,7 +164,7 @@ function MemberCard({ member, index, onClick }) {
     >
       {/* Avatar */}
       <div className={styles.cardAvatar}>
-        <TeamMemberPhoto slug={member.id} name={"avatar" || member.name} />
+        <TeamMemberPhoto slug={member.slug} name={member.name} />
       </div>
 
       {/* Info */}
@@ -233,8 +244,8 @@ function MemberModal({ member, onClose }) {
             <div className={styles.modalAvatar}>
               {member.slug ? (
                 <TeamMemberPhoto
-                  slug={member.id}
-                  name={"avatar" || member.name}
+                  slug={member.slug}
+                  name={member.name}
                 />
               ) : (
                 <div className={styles.cardAvatarFallback}>
@@ -279,7 +290,7 @@ function MemberModal({ member, onClose }) {
 
             {/* Quote */}
             <blockquote className={styles.modalQuote}>
-              <span className={styles.modalQuoteMark}>"</span>
+              <span className={styles.modalQuoteMark}>&ldquo;</span>
               {member.quote}
             </blockquote>
 

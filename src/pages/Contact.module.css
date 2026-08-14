@@ -347,3 +347,24 @@ a.infoCardValue:hover { color: var(--gm-gold); }
   padding-top: 14px;
   width: 100%;
 }
+
+.securityCheck {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid rgba(78, 96, 64, 0.18);
+  border-radius: 10px;
+  background: rgba(78, 96, 64, 0.04);
+}
+
+.securityCheckLabel {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--gm-deep);
+}
+
+.securityCheck > div,
+.securityCheck > div > div {
+  max-width: 100%;
+}

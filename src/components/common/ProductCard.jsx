@@ -7,7 +7,7 @@ export default function ProductCard({
   index = 0,
   showNumber = true,
 }) {
-  const { slug, name, img, subtitle, desc, tags = [], badge, color } = product;
+  const { slug, name, subtitle, desc, tags = [], badge, color } = product;
 
   return (
     <article
