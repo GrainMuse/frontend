@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { corsHeaders, preflightResponse } from "./cors.js";
 
 const MAX_BODY_BYTES = 12_000;
 const IP_LIMIT = 5;
@@ -20,20 +21,6 @@ function allowedOrigins(): Set<string> {
       .filter(Boolean)
       .map((origin) => new URL(origin).origin),
   );
-}
-
-function corsHeaders(origin: string): HeadersInit {
-  return {
-    "Access-Control-Allow-Origin": origin,
-    "Access-Control-Allow-Headers":
-      "authorization, x-client-info, apikey, content-type, x-retry-count, traceparent, tracestate, baggage",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Max-Age": "600",
-    "Cache-Control": "no-store",
-    "Content-Type": "application/json; charset=utf-8",
-    "Vary": "Origin",
-    "X-Content-Type-Options": "nosniff",
-  };
 }
 
 function jsonResponse(
@@ -264,7 +251,7 @@ Deno.serve(async (request: Request) => {
     }
 
     if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: corsHeaders(origin) });
+      return preflightResponse(origin);
     }
 
     if (request.method !== "POST") {

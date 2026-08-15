@@ -1,7 +1,11 @@
 /* eslint-env node */
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createInvitationHandler, readBearer } from "./invitations.js";
+import {
+  classifyInviteError,
+  createInvitationHandler,
+  readBearer,
+} from "./invitations.js";
 
 const env = {
   url: "https://project.supabase.co",
@@ -88,6 +92,25 @@ test("requires an MFA-backed active administrator", async () => {
   const { response } = await invoke({ allowed: false });
   assert.equal(response.statusCode, 403);
   assert.equal(response.body.error, "Administrator access required.");
+});
+
+test("classifies common Supabase invitation failures safely", () => {
+  assert.equal(
+    classifyInviteError({ status: 429, message: "email rate limit exceeded" }).code,
+    "EMAIL_RATE_LIMITED",
+  );
+  assert.equal(
+    classifyInviteError({ code: "user_already_exists" }).code,
+    "ACCOUNT_EXISTS",
+  );
+  assert.equal(
+    classifyInviteError({ message: "redirect URL is not allowed" }).code,
+    "INVITE_REDIRECT_INVALID",
+  );
+  assert.equal(
+    classifyInviteError({ message: "SMTP delivery failed" }).code,
+    "EMAIL_DELIVERY_FAILED",
+  );
 });
 
 test("invites and provisions an authorized staff member", async () => {
