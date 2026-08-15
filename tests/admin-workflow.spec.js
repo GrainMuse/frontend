@@ -1,5 +1,6 @@
 /* eslint-env node */
 import { expect, test } from "@playwright/test";
+import { createClient } from "@supabase/supabase-js";
 import * as OTPAuth from "otpauth";
 import postgres from "postgres";
 
@@ -21,6 +22,7 @@ const runId = Date.now().toString(36);
 const adminEmail = `admin-e2e-${runId}@grainmuse.local`;
 const editorEmail = `editor-e2e-${runId}@grainmuse.local`;
 const outsiderEmail = `outsider-e2e-${runId}@grainmuse.local`;
+const invitedEmail = `invited-e2e-${runId}@grainmuse.local`;
 const password = `Admin-${runId}-Pass!7`;
 const createdUsers = [];
 const sql = databaseUrl ? postgres(databaseUrl, { max: 1 }) : null;
@@ -72,11 +74,28 @@ async function enrollMfa(page) {
 
 test.describe.serial("admin portal", () => {
   let totpSecret;
+  let invitationLink;
 
   test.beforeAll(async ({ request }) => {
     await createUser(request, adminEmail, "admin");
     await createUser(request, editorEmail, "editor");
     await createUser(request, outsiderEmail, null);
+    const authAdmin = createClient(apiUrl, adminKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data: generated, error: generateError } =
+      await authAdmin.auth.admin.generateLink({
+        type: "invite",
+        email: invitedEmail,
+        options: {
+          redirectTo: "http://127.0.0.1:4173/admin/accept-invite",
+        },
+      });
+    expect(generateError).toBeNull();
+    invitationLink = generated.properties.action_link;
+    createdUsers.push(generated.user.id);
+    await sql`insert into public.admin_users (user_id, role, active)
+      values (${generated.user.id}, 'editor', true)`;
     await sql`insert into public.contact_submissions
       (name, email, message, enquiry_type, source)
       values (
@@ -117,6 +136,15 @@ test.describe.serial("admin portal", () => {
     await page.getByRole("button", { name: "Sign out" }).click();
   });
 
+  test("accepts an invitation, establishes a password, and continues to MFA", async ({ page }) => {
+    await page.goto(invitationLink);
+    await expect(page.getByRole("heading", { name: "Create your password." })).toBeVisible();
+    await page.getByLabel("New password").fill(password);
+    await page.getByLabel("Confirm password").fill(password);
+    await page.getByRole("button", { name: "Continue to authenticator setup" }).click();
+    await expect(page.getByRole("heading", { name: "Secure your account" })).toBeVisible();
+  });
+
   test("enrolls TOTP and completes category, product, team and content CRUD", async ({ page }) => {
     await signIn(page, adminEmail);
     totpSecret = await enrollMfa(page);
@@ -155,6 +183,21 @@ test.describe.serial("admin portal", () => {
     await page.getByLabel("JSON value").fill('{"enabled":true,"scope":"e2e"}');
     await page.getByRole("button", { name: "Save record" }).click();
     await expect(page.getByText(`e2e_content_${runId}`)).toBeVisible();
+
+    await page.route("**/api/admin/invitations", (route) =>
+      route.fulfill({
+        status: 201,
+        contentType: "application/json",
+        body: JSON.stringify({ invitation: {
+          email: "new.staff@example.com", role: "editor", userId: "mock-id",
+        } }),
+      }),
+    );
+    await page.getByRole("button", { name: "Staff access" }).click();
+    await page.getByLabel("Email address").fill("new.staff@example.com");
+    await page.getByLabel("Role").selectOption("editor");
+    await page.getByRole("button", { name: "Send secure invitation" }).click();
+    await expect(page.getByText("Invitation sent to new.staff@example.com.")).toBeVisible();
 
     for (const [section, name] of [["Site content", `e2e_content_${runId}`], ["Team", `E2E Member ${runId}`], ["Products", `E2E Product ${runId}`], ["Categories", `E2E Category ${runId}`]]) {
       await page.getByRole("button", { name: section }).click();

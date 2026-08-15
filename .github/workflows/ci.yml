@@ -49,6 +49,9 @@ jobs:
       - name: Test deployment guard
         run: npm run test:deployment
 
+      - name: Test trusted administrator invitations
+        run: npm run test:admin:api
+
       - name: Build production bundle
         run: npm run build
 

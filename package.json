@@ -11,6 +11,7 @@
     "test:contact": "node --test supabase/functions/submit-contact/validation.test.js",
     "test:deployment": "node --test scripts/supabase-staging-preflight.test.mjs",
     "test:admin:e2e": "playwright test tests/admin-workflow.spec.js",
+    "test:admin:api": "node --test api/admin/invitations.test.js",
     "supabase:start": "supabase start --exclude logflare,vector",
     "supabase:start:full": "supabase start",
     "supabase:stop": "supabase stop",
