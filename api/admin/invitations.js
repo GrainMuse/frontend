@@ -3,6 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ALLOWED_ROLES = new Set(["editor", "admin"]);
+const USERS_PAGE_SIZE = 1_000;
+const MAX_USER_PAGES = 100;
 
 function send(response, status, body) {
   response.status(status).setHeader("Content-Type", "application/json");
@@ -70,6 +72,36 @@ export function classifyInviteError(error) {
   };
 }
 
+export function isReplaceablePendingInvite(user) {
+  return Boolean(
+    user?.id &&
+      user.invited_at &&
+      !user.email_confirmed_at &&
+      !user.confirmed_at &&
+      !user.last_sign_in_at,
+  );
+}
+
+async function findUserByEmail(adminClient, email) {
+  for (let page = 1; page <= MAX_USER_PAGES; page += 1) {
+    const { data, error } = await adminClient.auth.admin.listUsers({
+      page,
+      perPage: USERS_PAGE_SIZE,
+    });
+    if (error) return { user: null, error };
+
+    const users = data?.users ?? [];
+    const user = users.find(
+      (candidate) => candidate.email?.trim().toLowerCase() === email,
+    );
+    if (user || users.length < USERS_PAGE_SIZE) {
+      return { user: user ?? null, error: null };
+    }
+  }
+
+  return { user: null, error: new Error("User lookup exceeded its safe limit.") };
+}
+
 export function createInvitationHandler({
   createClientImpl = createClient,
   environmentLoader = requireEnvironment,
@@ -120,11 +152,51 @@ export function createInvitationHandler({
   const adminClient = createClientImpl(env.url, env.secretKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data: invitation, error: inviteError } =
-    await adminClient.auth.admin.inviteUserByEmail(email, {
+  const invite = () => adminClient.auth.admin.inviteUserByEmail(email, {
       redirectTo: env.redirectTo,
       data: { invited_role: role },
     });
+  let { data: invitation, error: inviteError } = await invite();
+  let reissued = false;
+
+  if (inviteError && classifyInviteError(inviteError).code === "ACCOUNT_EXISTS") {
+    const { user: existingUser, error: lookupError } =
+      await findUserByEmail(adminClient, email);
+    if (lookupError) {
+      console.error("Supabase pending invitation lookup failed", {
+        code: lookupError.code ?? "unknown",
+        status: lookupError.status ?? "unknown",
+      });
+      return send(response, 502, {
+        error: "The existing invitation could not be checked safely.",
+        code: "INVITATION_LOOKUP_FAILED",
+      });
+    }
+
+    if (!isReplaceablePendingInvite(existingUser)) {
+      return send(response, 409, {
+        error: "That email already belongs to an account.",
+        code: "ACCOUNT_EXISTS",
+      });
+    }
+
+    const { error: deleteError } =
+      await adminClient.auth.admin.deleteUser(existingUser.id);
+    if (deleteError) {
+      console.error("Supabase pending invitation replacement failed", {
+        code: deleteError.code ?? "unknown",
+        status: deleteError.status ?? "unknown",
+      });
+      return send(response, 502, {
+        error: "The expired invitation could not be replaced safely.",
+        code: "INVITATION_REPLACEMENT_FAILED",
+      });
+    }
+
+    ({ data: invitation, error: inviteError } = await invite());
+    reissued = true;
+  }
+
   if (inviteError) {
     const classified = classifyInviteError(inviteError);
     console.error("Supabase invitation failed", {
@@ -150,7 +222,7 @@ export function createInvitationHandler({
   }
 
   return send(response, 201, {
-    invitation: { email, role, userId: invitation.user.id },
+    invitation: { email, role, userId: invitation.user.id, reissued },
   });
   };
 }

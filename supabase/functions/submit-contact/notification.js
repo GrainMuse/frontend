@@ -14,38 +14,13 @@ function emailJsRequest(config, value) {
         ...(config.privateKey ? { accessToken: config.privateKey } : {}),
         template_params: {
           from_name: value.name,
+          email: value.email,
           reply_to: value.email,
           phone: value.phone ?? "Not provided",
           enquiry_type: value.type,
           message: value.message,
           submitted_at: new Date().toISOString(),
           to_email: config.toEmail,
-        },
-      }),
-    },
-  };
-}
-
-function emailJsConfirmationRequest(config, value) {
-  return {
-    url: EMAILJS_ENDPOINT,
-    init: {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        service_id: config.serviceId,
-        template_id: config.autoreplyTemplateId,
-        user_id: config.publicKey,
-        ...(config.privateKey ? { accessToken: config.privateKey } : {}),
-        template_params: {
-          from_name: value.name,
-          to_name: value.name,
-          to_email: value.email,
-          reply_to: config.toEmail,
-          phone: value.phone ?? "Not provided",
-          enquiry_type: value.type,
-          message: value.message,
-          submitted_at: new Date().toISOString(),
         },
       }),
     },
@@ -93,16 +68,12 @@ export function createNotificationRequest({
   throw new Error(`Unsupported contact email provider: ${provider}`);
 }
 
-export function createConfirmationRequest({ config, value }) {
-  return emailJsConfirmationRequest(config, value);
-}
-
 async function sendRequest(request, fetchImpl, signal) {
   const response = await fetchImpl(request.url, {
     ...request.init,
     signal,
   });
-  return response.ok;
+  return { ok: response.ok, status: response.status };
 }
 
 export async function sendContactNotification({
@@ -119,15 +90,5 @@ export async function sendContactNotification({
     submissionId,
     value,
   });
-  return sendRequest(request, fetchImpl, signal);
-}
-
-export async function sendContactConfirmation({
-  config,
-  value,
-  fetchImpl = fetch,
-  signal = AbortSignal.timeout(8_000),
-}) {
-  const request = createConfirmationRequest({ config, value });
   return sendRequest(request, fetchImpl, signal);
 }
