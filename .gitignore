@@ -35,3 +35,9 @@ dist-ssr/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Supabase CLI runtime state (schema/config/migrations stay committed)
+supabase/.temp/
+supabase/.branches/
+supabase/functions/.env
+supabase/functions/.env.local

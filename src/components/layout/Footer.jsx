@@ -7,17 +7,14 @@ import {
   Phone,
   MapPin,
 } from "lucide-react";
-import { COMPANY, NAV_LINKS, PRODUCTS, PRODUCT_CATEGORIES } from "../../data";
+import { useContent } from "../../context/contentStore";
 import styles from "./Footer.module.css";
 
-const riceProducts = PRODUCTS.filter(
-  (p) => p.category === PRODUCT_CATEGORIES.RICE,
-);
-const teaProducts = PRODUCTS.filter(
-  (p) => p.category === PRODUCT_CATEGORIES.TEA,
-);
-
 export default function Footer() {
+  const { products, company, navLinks } = useContent();
+  const riceProducts = products.filter((product) => product.category === "rice");
+  const teaProducts = products.filter((product) => product.category === "tea");
+
   return (
     <footer className={styles.footer}>
       {/* Top band */}
@@ -44,21 +41,21 @@ export default function Footer() {
           </p>
           <div className={styles.socials}>
             <a
-              href={COMPANY.socials.instagram}
+              href={company.socials?.instagram ?? "#"}
               className={styles.socialLink}
               aria-label="Instagram"
             >
               <Instagram size={16} />
             </a>
             <a
-              href={COMPANY.socials.facebook}
+              href={company.socials?.facebook ?? "#"}
               className={styles.socialLink}
               aria-label="Facebook"
             >
               <Facebook size={16} />
             </a>
             <a
-              href={COMPANY.socials.linkedin}
+              href={company.socials?.linkedin ?? "#"}
               className={styles.socialLink}
               aria-label="LinkedIn"
             >
@@ -70,7 +67,7 @@ export default function Footer() {
         <div className={styles.col}>
           <p className={styles.colTitle}>Navigate</p>
           <ul className={styles.colLinks}>
-            {NAV_LINKS.map(({ label, path }) => (
+            {navLinks.map(({ label, path }) => (
               <li key={path}>
                 <Link to={path}>{label}</Link>
               </li>
@@ -94,25 +91,25 @@ export default function Footer() {
           <ul className={styles.contactList}>
             <li>
               <Mail size={13} />
-              <a href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a>
+              <a href={`mailto:${company.email}`}>{company.email}</a>
             </li>
             <li>
               <Phone size={13} />
-              <a href={`tel:${COMPANY.phone1}`}>{COMPANY.phone1}</a>
+              <a href={`tel:${company.phone1}`}>{company.phone1}</a>
             </li>
             <li>
               <Phone size={13} />
-              <a href={`tel:${COMPANY.phone2}`}>{COMPANY.phone2}</a>
+              <a href={`tel:${company.phone2}`}>{company.phone2}</a>
             </li>
             <li>
               <MapPin size={13} />
-              <span>{COMPANY.location}</span>
+              <span>{company.location}</span>
             </li>
           </ul>
           <p className={styles.tradeNote}>
             For wholesale & trade enquiries:
             <br />
-            <a href={`mailto:${COMPANY.tradeEmail}`}>{COMPANY.tradeEmail}</a>
+            <a href={`mailto:${company.tradeEmail}`}>{company.tradeEmail}</a>
           </p>
         </div>
       </div>

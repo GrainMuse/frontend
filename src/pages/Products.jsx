@@ -5,21 +5,23 @@ import { ArrowRight, ChevronDown } from "lucide-react";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import PageHero from "../components/ui/PageHero";
 import Marquee from "../components/common/Marquee";
-import { PRODUCTS, PRODUCT_CATEGORIES } from "../data";
+import { useContent } from "../context/contentStore";
 import { getProductImage } from "../images/imageRegistry";
 import SEOHead from "../components/common/SEOHead";
 import styles from "./Products.module.css";
-
-const FILTERS = [
-  { key: "all", label: "All Products" },
-  { key: PRODUCT_CATEGORIES.RICE, label: "Instant Fried Rice" },
-  { key: PRODUCT_CATEGORIES.TEA, label: "Herbal Teas" },
-];
 
 export default function Products() {
   const location = useLocation();
   const [filter, setFilter] = useState("all");
   const [expanded, setExpanded] = useState(null);
+  const { categories, products, loading, error, reload } = useContent();
+  const filters = [
+    { key: "all", label: "All Products" },
+    ...categories.map((category) => ({
+      key: category.slug,
+      label: category.name,
+    })),
+  ];
 
   useScrollReveal([filter]);
 
@@ -34,17 +36,13 @@ export default function Products() {
           200,
         );
     }
-  }, [location]);
+  }, [location, products]);
 
   const filtered =
-    filter === "all" ? PRODUCTS : PRODUCTS.filter((p) => p.category === filter);
+    filter === "all" ? products : products.filter((p) => p.category === filter);
 
-  const riceFiltered = filtered.filter(
-    (p) => p.category === PRODUCT_CATEGORIES.RICE,
-  );
-  const teaFiltered = filtered.filter(
-    (p) => p.category === PRODUCT_CATEGORIES.TEA,
-  );
+  const riceFiltered = filtered.filter((p) => p.category === "rice");
+  const teaFiltered = filtered.filter((p) => p.category === "tea");
 
   return (
     <>
@@ -68,11 +66,11 @@ export default function Products() {
             role="group"
             aria-label="Filter products"
           >
-            {FILTERS.map(({ key, label }) => {
+            {filters.map(({ key, label }) => {
               const count =
                 key === "all"
-                  ? PRODUCTS.length
-                  : PRODUCTS.filter((p) => p.category === key).length;
+                  ? products.length
+                  : products.filter((p) => p.category === key).length;
               return (
                 <button
                   key={key}
@@ -94,12 +92,20 @@ export default function Products() {
       </div>
 
       <div className={`container ${styles.pageBody}`}>
+        {loading && <p role="status">Loading products…</p>}
+        {error && (
+          <div role="alert">
+            <p>{error}</p>
+            <button type="button" className="btn btn-outline" onClick={reload}>
+              Try Again
+            </button>
+          </div>
+        )}
         {/* Rice Category */}
         {riceFiltered.length > 0 && (
           <div className={styles.category}>
             <div className={`${styles.categoryHeader} sr`}>
               <h2 className={styles.categoryTitle}>
-                <span className={styles.categoryIcon}>🍚</span>
                 Instant Fried Rice
                 <span className={styles.categoryCount}>
                   {riceFiltered.length} varieties
@@ -129,7 +135,6 @@ export default function Products() {
           <div className={styles.category}>
             <div className={`${styles.categoryHeader} sr`}>
               <h2 className={styles.categoryTitle}>
-                <span className={styles.categoryIcon}>🫖</span>
                 Herbal Teas
                 <span className={styles.categoryCount}>
                   {teaFiltered.length} blends
@@ -191,8 +196,6 @@ export default function Products() {
 /* ── Full Product Card with Expandable Detail ────────────── */
 function FullProductCard({ product, index, expanded, onToggle }) {
   const {
-    id,
-    icon,
     slug,
     name,
     subtitle,

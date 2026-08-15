@@ -64,12 +64,6 @@ function sanitise(value = '', maxLen = FIELD_MAX) {
     .slice(0, maxLen);
 }
 
-// ── Honeypot Bot Detection ─────────────────────────────────────
-// The Contact form includes a hidden field. Bots fill everything; humans don't.
-function isBotSubmission(honeypotValue) {
-  return typeof honeypotValue === 'string' && honeypotValue.length > 0;
-}
-
 // ── EmailJS Initialisation ────────────────────────────────────
 let initialised = false;
 
@@ -111,7 +105,7 @@ export function validateContactForm(form) {
     errors.email = 'Please enter a valid email address';
   }
 
-  if (form.phone?.trim() && !/^[\d\s\+\-\(\)]{7,20}$/.test(form.phone.trim())) {
+  if (form.phone?.trim() && !/^[\d\s+()-]{7,20}$/.test(form.phone.trim())) {
     errors.phone = 'Please enter a valid phone number';
   }
 
@@ -153,18 +147,10 @@ function classifyError(err) {
  * sendContactEmail
  *
  * @param {{ name: string, email: string, phone?: string, type?: string, message: string }} form
- * @param {string} [honeypot=''] — value of the hidden honeypot field
  * @returns {Promise<{ ok: boolean, error?: string }>}
  */
-export async function sendContactEmail(form, honeypot = '') {
-  // ── 1. Bot detection ──────────────────────────────────────
-  if (isBotSubmission(honeypot)) {
-    if (IS_DEV) console.info('[EmailService] Bot submission blocked (honeypot triggered)');
-    // Return success silently — don't reveal detection to bots
-    return { ok: true };
-  }
-
-  // ── 2. Rate limit ─────────────────────────────────────────
+export async function sendContactEmail(form) {
+  // ── 1. Rate limit ─────────────────────────────────────────
   if (isRateLimited()) {
     return {
       ok: false,
@@ -172,7 +158,7 @@ export async function sendContactEmail(form, honeypot = '') {
     };
   }
 
-  // ── 3. Config guard ───────────────────────────────────────
+  // ── 2. Config guard ───────────────────────────────────────
   if (!CONFIG.publicKey || !CONFIG.serviceId || !CONFIG.contactTemplateId) {
     if (IS_DEV) {
       console.error('[EmailService] Missing config. Required .env variables:', {
@@ -187,7 +173,7 @@ export async function sendContactEmail(form, honeypot = '') {
     };
   }
 
-  // ── 4. Build template params ──────────────────────────────
+  // ── 3. Build template params ──────────────────────────────
   const timestamp = new Date().toLocaleString('en-GB', {
     weekday:  'long',
     year:     'numeric',
@@ -210,7 +196,7 @@ export async function sendContactEmail(form, honeypot = '') {
     site_url:     typeof window !== 'undefined' ? window.location.origin : 'grainmuse.lk',
   };
 
-  // ── 5. Send notification email to trade@grainmuse.net ─────
+  // ── 4. Send notification email to trade@grainmuse.net ─────
   try {
     const result = await emailjs.send(
       CONFIG.serviceId,
@@ -225,7 +211,7 @@ export async function sendContactEmail(form, honeypot = '') {
     return { ok: false, error: classifyError(err) };
   }
 
-  // ── 6. Send auto-reply to visitor (fire-and-forget) ───────
+  // ── 5. Send auto-reply to visitor (fire-and-forget) ───────
   if (CONFIG.autoreplyTemplateId) {
     emailjs.send(
       CONFIG.serviceId,
@@ -239,7 +225,7 @@ export async function sendContactEmail(form, honeypot = '') {
     });
   }
 
-  // ── 7. Record attempt for rate limiting ───────────────────
+  // ── 6. Record attempt for rate limiting ───────────────────
   recordAttempt();
 
   return { ok: true };

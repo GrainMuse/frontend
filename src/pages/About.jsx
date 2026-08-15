@@ -4,7 +4,7 @@ import { useScrollReveal } from "../hooks/useScrollReveal";
 import PageHero from "../components/ui/PageHero";
 import AnimatedCounter from "../components/ui/AnimatedCounter";
 import Marquee from "../components/common/Marquee";
-import { PROCESS_STEPS } from "../data";
+import { useContent } from "../context/contentStore";
 import SEOHead from "../components/common/SEOHead";
 import styles from "./About.module.css";
 
@@ -37,6 +37,7 @@ const STATS = [
 ];
 
 export default function About() {
+  const { processSteps } = useContent();
   useScrollReveal([]);
 
   return (
@@ -167,7 +168,7 @@ export default function About() {
             </p>
           </div>
           <div className={styles.processSteps}>
-            {PROCESS_STEPS.map((step, i) => (
+            {processSteps.map((step, i) => (
               <div
                 key={step.step}
                 className={`${styles.processStep} sr sr-delay-${i + 1}`}
@@ -175,7 +176,7 @@ export default function About() {
                 <div className={styles.processStepLeft}>
                   <span className={styles.processNum}>{step.step}</span>
                   <div
-                    className={`${styles.processLine} ${i < PROCESS_STEPS.length - 1 ? styles.processLineVisible : ""}`}
+                    className={`${styles.processLine} ${i < processSteps.length - 1 ? styles.processLineVisible : ""}`}
                   />
                 </div>
                 <div className={styles.processStepContent}>
@@ -194,7 +195,7 @@ export default function About() {
       <section className={styles.quoteSection}>
         <div className={`container ${styles.quoteInner}`}>
           <div className={`${styles.quoteBlock} sr`}>
-            <span className={styles.quoteGlyph}>"</span>
+            <span className={styles.quoteGlyph}>&ldquo;</span>
             <blockquote className={styles.quoteText}>
               Every product we make is a small promise to use real ingredients,
               to respect the craft, and to make your everyday a little more

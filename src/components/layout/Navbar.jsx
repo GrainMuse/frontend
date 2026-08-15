@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { useNavScroll } from "../../hooks/useNavScroll";
-import { NAV_LINKS, COMPANY } from "../../data";
+import { useContent } from "../../context/contentStore";
 import { getHeroImage } from "../../images/imageRegistry";
 import styles from "./Navbar.module.css";
 
@@ -10,6 +10,7 @@ export default function Navbar() {
   const scrolled = useNavScroll(40);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const { company, navLinks } = useContent();
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -31,8 +32,8 @@ export default function Navbar() {
           {/* Logo */}
           <Link to="/" className={styles.logo} aria-label="Grain Muse Home">
             <LogoImage
-              slug={COMPANY.logo}
-              alt={"logo" || COMPANY.name}
+              slug={company.logo}
+              alt={company.name || "Grain Muse"}
               className={styles.logoImg}
             />
           </Link>
@@ -40,7 +41,7 @@ export default function Navbar() {
           {/* Desktop Nav */}
           <nav className={styles.desktopNav} aria-label="Main navigation">
             <ul className={styles.navList}>
-              {NAV_LINKS.map(({ label, path }) => (
+              {navLinks.map(({ label, path }) => (
                 <li key={path}>
                   <NavLink
                     to={path}
@@ -89,7 +90,7 @@ export default function Navbar() {
         <div className={styles.mobileMenuInner}>
           <p className={styles.mobileEyebrow}>Navigation</p>
           <ul className={styles.mobileNavList}>
-            {NAV_LINKS.map(({ label, path }, i) => (
+            {navLinks.map(({ label, path }, i) => (
               <li key={path} style={{ animationDelay: `${i * 0.07}s` }}>
                 <NavLink
                   to={path}

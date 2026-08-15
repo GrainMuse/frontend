@@ -13,12 +13,15 @@ import {
 } from "lucide-react";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import PageHero from "../components/ui/PageHero";
+import TurnstileWidget from "../components/common/TurnstileWidget";
 import {
-  sendContactEmail,
+  sendContactMessage,
   validateContactForm,
   getRemainingAttempts,
-} from "../services/emailService";
-import { COMPANY } from "../data";
+  turnstileSiteKey,
+  usesSupabaseContact,
+} from "../services/contactService";
+import { useContent } from "../context/contentStore";
 import SEOHead from "../components/common/SEOHead";
 import styles from "./Contact.module.css";
 
@@ -31,43 +34,45 @@ const ENQUIRY_TYPES = [
   "Other",
 ];
 
-const CONTACT_INFO = [
-  {
-    icon: <Mail size={18} />,
-    label: "Email Us",
-    value: COMPANY.email,
-    sub: "We respond within 24 hours on weekdays",
-    href: `mailto:${COMPANY.email}`,
-  },
-  {
-    icon: <Phone size={18} />,
-    label: "Call Us",
-    value: COMPANY.phone1,
-    sub: COMPANY.hours,
-    href: `tel:${COMPANY.phone1}`,
-  },
-  {
-    icon: <Phone size={18} />,
-    label: "Call Us",
-    value: COMPANY.phone2,
-    sub: COMPANY.hours,
-    href: `tel:${COMPANY.phone2}`,
-  },
-  {
-    icon: <MapPin size={18} />,
-    label: "Find Us",
-    value: COMPANY.location,
-    sub: "Proudly crafted and distributed across Sri Lanka",
-    href: null,
-  },
-  {
-    icon: <Clock size={18} />,
-    label: "Trade Enquiries",
-    value: COMPANY.tradeEmail,
-    sub: "Wholesale, bulk orders & partnerships",
-    href: `mailto:${COMPANY.tradeEmail}`,
-  },
-];
+function buildContactInfo(company) {
+  return [
+    {
+      icon: <Mail size={18} />,
+      label: "Email Us",
+      value: company.email,
+      sub: "We respond within 24 hours on weekdays",
+      href: `mailto:${company.email}`,
+    },
+    {
+      icon: <Phone size={18} />,
+      label: "Call Us",
+      value: company.phone1,
+      sub: company.hours,
+      href: `tel:${company.phone1}`,
+    },
+    {
+      icon: <Phone size={18} />,
+      label: "Call Us",
+      value: company.phone2,
+      sub: company.hours,
+      href: `tel:${company.phone2}`,
+    },
+    {
+      icon: <MapPin size={18} />,
+      label: "Find Us",
+      value: company.location,
+      sub: "Proudly crafted and distributed across Sri Lanka",
+      href: null,
+    },
+    {
+      icon: <Clock size={18} />,
+      label: "Trade Enquiries",
+      value: company.tradeEmail,
+      sub: "Wholesale, bulk orders & partnerships",
+      href: `mailto:${company.tradeEmail}`,
+    },
+  ];
+}
 
 const FAQS = [
   {
@@ -92,13 +97,18 @@ const INITIAL_FORM = { name: "", email: "", phone: "", type: "", message: "" };
 
 export default function Contact() {
   useScrollReveal([]);
+  const { company } = useContent();
+  const contactInfo = buildContactInfo(company);
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle"); // idle | sending | success | error
   const [apiError, setApiError] = useState("");
   const [openFaq, setOpenFaq] = useState(null);
   const [remaining, setRemaining] = useState(() => getRemainingAttempts());
-  const honeypotRef = useRef(null);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const [turnstileError, setTurnstileError] = useState("");
+  const [delivery, setDelivery] = useState(null);
+  const turnstileRef = useRef(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -115,17 +125,25 @@ export default function Contact() {
       document.getElementById(Object.keys(errs)[0])?.focus();
       return;
     }
+
+    if (usesSupabaseContact && !turnstileToken) {
+      setTurnstileError("Please complete the security check before sending.");
+      return;
+    }
+
     setStatus("sending");
     setApiError("");
-    const result = await sendContactEmail(
-      form,
-      honeypotRef.current?.value ?? "",
-    );
+    const result = await sendContactMessage(form, turnstileToken);
     if (result.ok) {
+      setDelivery(result);
       setStatus("success");
     } else {
       setStatus("error");
       setApiError(result.error ?? "Something went wrong. Please try again.");
+      if (usesSupabaseContact) {
+        setTurnstileToken("");
+        turnstileRef.current?.reset();
+      }
     }
     setRemaining(getRemainingAttempts());
   };
@@ -135,6 +153,9 @@ export default function Contact() {
     setErrors({});
     setStatus("idle");
     setApiError("");
+    setTurnstileToken("");
+    setTurnstileError("");
+    setDelivery(null);
     setRemaining(getRemainingAttempts());
   };
 
@@ -158,8 +179,11 @@ export default function Contact() {
             {/* LEFT: Info + FAQ */}
             <div className={styles.infoCol}>
               <div className={`${styles.infoCards} sr`}>
-                {CONTACT_INFO.map((item) => (
-                  <div key={item.label} className={styles.infoCard}>
+                {contactInfo.map((item) => (
+                  <div
+                    key={`${item.label}-${item.value}`}
+                    className={styles.infoCard}
+                  >
                     <div className={styles.infoCardIcon}>{item.icon}</div>
                     <div>
                       <p className={styles.infoCardLabel}>{item.label}</p>
@@ -209,7 +233,12 @@ export default function Contact() {
             {/* RIGHT: Form */}
             <div className={`${styles.formCol} sr sr-delay-2`}>
               {status === "success" ? (
-                <SuccessState onReset={handleReset} name={form.name} />
+                <SuccessState
+                  onReset={handleReset}
+                  name={form.name}
+                  notificationSent={delivery?.notificationSent}
+                  confirmationSent={delivery?.confirmationSent}
+                />
               ) : (
                 <form
                   className={styles.form}
@@ -233,30 +262,6 @@ export default function Contact() {
                         </span>
                       )}
                     </p>
-                  </div>
-
-                  {/* Honeypot — invisible to humans, traps bots */}
-                  <div
-                    aria-hidden="true"
-                    style={{
-                      position: "absolute",
-                      left: "-9999px",
-                      top: "-9999px",
-                      opacity: 0,
-                      height: 0,
-                    }}
-                    tabIndex={-1}
-                  >
-                    <label htmlFor="website">Website</label>
-                    <input
-                      id="website"
-                      name="website"
-                      type="text"
-                      ref={honeypotRef}
-                      defaultValue=""
-                      tabIndex={-1}
-                      autoComplete="off"
-                    />
                   </div>
 
                   <div className={styles.formRow}>
@@ -346,6 +351,39 @@ export default function Contact() {
                     )}
                   </div>
 
+                  {usesSupabaseContact && (
+                    <div className={styles.securityCheck}>
+                      <span className={styles.securityCheckLabel}>
+                        Security verification *
+                      </span>
+                      <TurnstileWidget
+                        ref={turnstileRef}
+                        siteKey={turnstileSiteKey}
+                        onVerify={(token) => {
+                          setTurnstileToken(token);
+                          setTurnstileError("");
+                        }}
+                        onExpire={() => {
+                          setTurnstileToken("");
+                          setTurnstileError(
+                            "The security check expired. Please complete it again.",
+                          );
+                        }}
+                        onError={() => {
+                          setTurnstileToken("");
+                          setTurnstileError(
+                            "The security check could not load. Please refresh and try again.",
+                          );
+                        }}
+                      />
+                      {turnstileError && (
+                        <span className={styles.errorMsg} role="alert">
+                          <AlertCircle size={12} /> {turnstileError}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   {/* API Error Banner */}
                   {status === "error" && apiError && (
                     <div
@@ -385,7 +423,7 @@ export default function Contact() {
                       style={{ marginTop: "2px", opacity: 0.8 }}
                     />
                     <span>
-                      Your message is securely delivered to{" "}
+                      Your message is securely submitted to{" "}
                       <strong>trade@grainmuse.net</strong>. We respect your
                       privacy and never share your details.
                     </span>
@@ -439,22 +477,35 @@ function FormField({
   );
 }
 
-function SuccessState({ onReset, name }) {
+function SuccessState({
+  onReset,
+  name,
+  notificationSent = true,
+  confirmationSent = true,
+}) {
   const firstName = name ? name.split(" ")[0] : "there";
   return (
     <div className={styles.success} role="status" aria-live="polite">
       <div className={styles.successIconWrap}>
         <CheckCircle2 size={40} className={styles.successIcon} />
       </div>
-      <h3 className={styles.successTitle}>Message sent, {firstName}!</h3>
+      <h3 className={styles.successTitle}>Message received, {firstName}!</h3>
       <p className={styles.successText}>
-        Your message has been delivered to our team at{" "}
+        Your message has been securely recorded for our team at{" "}
         <strong>trade@grainmuse.net</strong>. We&apos;ll get back to you within
         one business day.
       </p>
-      <p className={styles.successAutoReply}>
-        A confirmation copy has been sent to your email address.
-      </p>
+      {!notificationSent && (
+        <p className={styles.successAutoReply}>
+          Your enquiry is safely stored. Email notification was delayed, but
+          our team can still review your message.
+        </p>
+      )}
+      {confirmationSent && (
+        <p className={styles.successAutoReply}>
+          A confirmation copy has been sent to your email address.
+        </p>
+      )}
       <div className={styles.successActions}>
         <Link to="/products" className="btn btn-primary">
           Explore Products <ArrowRight size={15} />
