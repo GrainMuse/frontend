@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { corsHeaders, preflightResponse } from "./cors.js";
+import { sendContactNotification } from "./notification.js";
 
 const MAX_BODY_BYTES = 12_000;
 const IP_LIMIT = 5;
@@ -201,33 +202,29 @@ async function sendNotification(
   },
 ): Promise<boolean> {
   try {
-    const body = {
-      from: requiredEnv("CONTACT_FROM_EMAIL"),
-      to: [requiredEnv("CONTACT_TO_EMAIL")],
-      reply_to: value.email,
-      subject: `New Grain Muse enquiry: ${value.type}`,
-      text: [
-        `Name: ${value.name}`,
-        `Email: ${value.email}`,
-        `Phone: ${value.phone ?? "Not provided"}`,
-        `Type: ${value.type}`,
-        "",
-        value.message,
-      ].join("\n"),
-    };
+    const provider = Deno.env.get("CONTACT_EMAIL_PROVIDER")?.trim().toLowerCase() ||
+      "resend";
+    const toEmail = requiredEnv("CONTACT_TO_EMAIL");
+    const config = provider === "emailjs"
+      ? {
+        serviceId: requiredEnv("VITE_EMAILJS_SERVICE_ID"),
+        templateId: requiredEnv("VITE_EMAILJS_TEMPLATE_ID"),
+        publicKey: requiredEnv("VITE_EMAILJS_PUBLIC_KEY"),
+        privateKey: Deno.env.get("EMAILJS_PRIVATE_KEY")?.trim() || undefined,
+        toEmail,
+      }
+      : {
+        apiKey: requiredEnv("RESEND_API_KEY"),
+        fromEmail: requiredEnv("CONTACT_FROM_EMAIL"),
+        toEmail,
+      };
 
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${requiredEnv("RESEND_API_KEY")}`,
-        "Content-Type": "application/json",
-        "Idempotency-Key": `contact-${submissionId}-notification`,
-      },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(8_000),
+    return await sendContactNotification({
+      provider,
+      config,
+      submissionId,
+      value,
     });
-
-    return response.ok;
   } catch {
     return false;
   }

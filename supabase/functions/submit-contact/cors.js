@@ -8,6 +8,7 @@ export function corsHeaders(origin) {
     "Cache-Control": "no-store",
     "Content-Type": "application/json; charset=utf-8",
     "Vary": "Origin",
+    "X-GrainMuse-Function-Version": "2026-08-15.1",
     "X-Content-Type-Options": "nosniff",
   };
 }
@@ -16,7 +17,7 @@ export function preflightResponse(origin) {
   // Supabase's Edge Runtime expects an ordinary successful response here.
   // A bodyless 204 can throw in some runtime versions when representation
   // headers such as Content-Type are present.
-  return new Response("ok", {
+  return Response.json({ ok: true }, {
     status: 200,
     headers: corsHeaders(origin),
   });
