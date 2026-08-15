@@ -52,6 +52,51 @@ jobs:
       - name: Build production bundle
         run: npm run build
 
+  admin-portal:
+    name: Admin portal workflow
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start isolated local Supabase
+        run: npx supabase start --exclude logflare,vector
+
+      - name: Export local Supabase test environment
+        run: npx supabase status -o env >> "$GITHUB_ENV"
+
+      - name: Run complete admin workflow
+        run: npm run test:admin:e2e
+
+      - name: Upload browser test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-portal-playwright-report
+          path: playwright-report
+          retention-days: 7
+
+      - name: Stop local Supabase
+        if: always()
+        run: npx supabase stop --no-backup
+
   database:
     name: Supabase database
     runs-on: ubuntu-latest

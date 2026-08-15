@@ -150,6 +150,54 @@ export function invalidatePublicContent() {
   publicContentRequest = null;
 }
 
+export async function fetchAdminContent() {
+  const client = requireSupabase();
+  const [categoriesResult, productsResult, teamResult, siteResult, enquiriesResult] =
+    await Promise.all([
+      client.from("product_categories").select(CATEGORY_FIELDS).order("display_order"),
+      client.from("products").select(PRODUCT_FIELDS).order("display_order"),
+      client.from("team_members").select(TEAM_FIELDS).order("display_order"),
+      client.from("site_content").select(SITE_CONTENT_FIELDS).order("key"),
+      client.from("contact_submissions").select("id, name, email, phone, enquiry_type, message, status, source, created_at, updated_at").order("created_at", { ascending: false }),
+    ]);
+
+  [categoriesResult, productsResult, teamResult, siteResult].forEach((result) =>
+    throwQueryError(result.error, "admin content read"),
+  );
+  // Editors are intentionally denied enquiry access by RLS.
+  if (enquiriesResult.error && enquiriesResult.error.code !== "42501") {
+    throwQueryError(enquiriesResult.error, "enquiry read");
+  }
+  return {
+    categories: (categoriesResult.data ?? []).map(mapCategory),
+    products: (productsResult.data ?? []).map(mapProduct),
+    teamMembers: (teamResult.data ?? []).map(mapTeamMember),
+    siteContent: siteResult.data ?? [],
+    enquiries: enquiriesResult.data ?? [],
+  };
+}
+
+export async function fetchAdminMembership(userId) {
+  const { data, error } = await requireSupabase()
+    .from("admin_users")
+    .select("user_id, role, active")
+    .eq("user_id", userId)
+    .maybeSingle();
+  throwQueryError(error, "membership read");
+  return data;
+}
+
+export async function updateEnquiryStatus(id, status) {
+  const { data, error } = await requireSupabase()
+    .from("contact_submissions")
+    .update({ status })
+    .eq("id", id)
+    .select("id, status, updated_at")
+    .single();
+  throwQueryError(error, "enquiry update");
+  return data;
+}
+
 function categoryWrite(input) {
   return compact({
     slug: input.slug,
