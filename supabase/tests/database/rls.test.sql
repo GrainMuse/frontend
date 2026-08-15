@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(43);
+select plan(59);
 
 -- Schema protection is never optional for Data API tables.
 select ok(
@@ -140,13 +140,55 @@ select ok(
   ),
   'the trusted invitation server can provision staff membership'
 );
+select ok(
+  not pg_catalog.has_function_privilege(
+    'anon',
+    'public.record_admin_invitation(uuid,text,public.admin_role,uuid,integer,boolean)',
+    'EXECUTE'
+  ),
+  'anonymous users cannot record staff invitations'
+);
+select ok(
+  not pg_catalog.has_function_privilege(
+    'authenticated',
+    'public.record_admin_invitation(uuid,text,public.admin_role,uuid,integer,boolean)',
+    'EXECUTE'
+  ),
+  'browser-authenticated users cannot record staff invitations'
+);
+select ok(
+  pg_catalog.has_function_privilege(
+    'service_role',
+    'public.record_admin_invitation(uuid,text,public.admin_role,uuid,integer,boolean)',
+    'EXECUTE'
+  ),
+  'the trusted invitation server can record staff invitations'
+);
+select ok(
+  pg_catalog.has_function_privilege(
+    'authenticated',
+    'public.get_my_admin_invitation()',
+    'EXECUTE'
+  ),
+  'an invited authenticated user can inspect their invitation status'
+);
+select ok(
+  pg_catalog.has_function_privilege(
+    'authenticated',
+    'public.accept_admin_invitation()',
+    'EXECUTE'
+  ),
+  'an invited authenticated user can consume their invitation'
+);
 
 -- Fixtures are created as the migration owner before assuming API roles.
 insert into auth.users (
   id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at
 ) values
   ('10000000-0000-0000-0000-000000000001', 'authenticated', 'authenticated', 'editor@example.test', '', now(), now(), now()),
-  ('10000000-0000-0000-0000-000000000002', 'authenticated', 'authenticated', 'admin@example.test', '', now(), now(), now());
+  ('10000000-0000-0000-0000-000000000002', 'authenticated', 'authenticated', 'admin@example.test', '', now(), now(), now()),
+  ('10000000-0000-0000-0000-000000000003', 'authenticated', 'authenticated', 'pending@example.test', '', now(), now(), now()),
+  ('10000000-0000-0000-0000-000000000004', 'authenticated', 'authenticated', 'expired@example.test', '', now(), now(), now());
 
 insert into public.admin_users (user_id, role) values
   ('10000000-0000-0000-0000-000000000001', 'editor'),
@@ -309,6 +351,129 @@ select ok(
   'rate limiter rejects a request over the configured limit'
 );
 reset role;
+
+-- Staff membership is deferred until the invited user accepts a valid pending record.
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"00000000-0000-0000-0000-000000000000","role":"service_role"}',
+  true
+);
+set local role service_role;
+select lives_ok(
+  $$select public.record_admin_invitation(
+    '10000000-0000-0000-0000-000000000003',
+    'pending@example.test',
+    'editor',
+    '10000000-0000-0000-0000-000000000002',
+    3600,
+    false
+  )$$,
+  'the trusted server records a pending invitation'
+);
+reset role;
+
+select results_eq(
+  $$select count(*)::bigint from public.admin_users
+    where user_id = '10000000-0000-0000-0000-000000000003'$$,
+  'values (0::bigint)',
+  'pending invitation has no active staff membership'
+);
+
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-0000-0000-000000000003","role":"authenticated","aal":"aal1"}',
+  true
+);
+set local role authenticated;
+select results_eq(
+  'select status::text from public.get_my_admin_invitation()',
+  $$values ('pending'::text)$$,
+  'the invited user sees their pending status'
+);
+select results_eq(
+  'select public.accept_admin_invitation() is null',
+  'values (true)',
+  'a pending invitation cannot activate membership before a password is set'
+);
+reset role;
+
+update auth.users
+set encrypted_password = 'test-password-hash', updated_at = now()
+where id = '10000000-0000-0000-0000-000000000003';
+
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-0000-0000-000000000003","role":"authenticated","aal":"aal1"}',
+  true
+);
+set local role authenticated;
+select results_eq(
+  'select public.accept_admin_invitation()::text',
+  $$values ('editor'::text)$$,
+  'the invited user consumes the pending role'
+);
+reset role;
+
+select results_eq(
+  $$select role::text from public.admin_users
+    where user_id = '10000000-0000-0000-0000-000000000003'$$,
+  $$values ('editor'::text)$$,
+  'membership is activated only after acceptance'
+);
+
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"00000000-0000-0000-0000-000000000000","role":"service_role"}',
+  true
+);
+set local role service_role;
+select results_eq(
+  $$select status::text from public.get_admin_invitation_for_email('pending@example.test')$$,
+  $$values ('accepted'::text)$$,
+  'the server records the accepted lifecycle state'
+);
+select lives_ok(
+  $$select public.record_admin_invitation(
+    '10000000-0000-0000-0000-000000000004',
+    'expired@example.test',
+    'admin',
+    '10000000-0000-0000-0000-000000000002',
+    3600,
+    false
+  )$$,
+  'the trusted server records another pending invitation'
+);
+reset role;
+
+update private.admin_invitations
+set sent_at = now() - interval '2 hours',
+    expires_at = now() - interval '1 hour'
+where email = 'expired@example.test';
+
+select set_config(
+  'request.jwt.claims',
+  '{"sub":"10000000-0000-0000-0000-000000000004","role":"authenticated","aal":"aal1"}',
+  true
+);
+set local role authenticated;
+select results_eq(
+  'select status::text from public.get_my_admin_invitation()',
+  $$values ('expired'::text)$$,
+  'an overdue pending invitation is marked expired'
+);
+select results_eq(
+  'select public.accept_admin_invitation() is null',
+  'values (true)',
+  'an expired invitation cannot activate membership'
+);
+reset role;
+
+select results_eq(
+  $$select count(*)::bigint from public.admin_users
+    where user_id = '10000000-0000-0000-0000-000000000004'$$,
+  'values (0::bigint)',
+  'expired invitation leaves no staff membership'
+);
 
 select * from finish();
 rollback;

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { ChevronRight, Leaf, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
-import { fetchAdminMembership } from "../../services/contentService";
 import styles from "../../pages/Admin.module.css";
 
 export function AdminLogin({ onReady }) {
@@ -101,10 +100,19 @@ export function AcceptInvite() {
         setState("invalid");
         return;
       }
-      const member = await fetchAdminMembership(data.session.user.id);
-      if (!member?.active) {
+      const { data: invitations, error: invitationError } = await supabase.rpc(
+        "get_my_admin_invitation",
+      );
+      const invitation = Array.isArray(invitations)
+        ? invitations[0] ?? null
+        : invitations ?? null;
+      if (invitation?.status === "accepted") {
+        navigate("/admin", { replace: true });
+        return;
+      }
+      if (invitationError || invitation?.status !== "pending") {
         await supabase.auth.signOut();
-        setError("This invitation does not grant active staff access.");
+        setError("This invitation is invalid, expired, or no longer pending.");
         setState("invalid");
         return;
       }
@@ -115,7 +123,7 @@ export function AcceptInvite() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [navigate]);
   async function submit(event) {
     event.preventDefault();
     setError("");
@@ -133,6 +141,15 @@ export function AcceptInvite() {
     if (updateError) {
       setError("Your password could not be saved. Request a new invitation.");
       setState("ready");
+      return;
+    }
+    const { data: acceptedRole, error: acceptanceError } = await supabase.rpc(
+      "accept_admin_invitation",
+    );
+    if (acceptanceError || !acceptedRole) {
+      await supabase.auth.signOut();
+      setError("This invitation expired before it could be completed. Request a new invitation.");
+      setState("invalid");
       return;
     }
     navigate("/admin", { replace: true });

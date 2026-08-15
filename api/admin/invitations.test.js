@@ -13,6 +13,7 @@ const env = {
   publishableKey: "publishable",
   secretKey: "secret",
   redirectTo: "https://grainmuse.example/admin/accept-invite",
+  inviteExpirySeconds: 3600,
 };
 
 function responseRecorder() {
@@ -40,13 +41,16 @@ function request(overrides = {}) {
 function clients({
   allowed = true,
   inviteError = null,
-  membershipError = null,
+  trackingError = null,
+  trackingLookupError = null,
+  trackedInvitation = null,
   existingUser = null,
   listUsersError = null,
   deleteError = null,
 } = {}) {
   let deletedUser = null;
   let inviteCalls = 0;
+  const rpcCalls = [];
   const userClient = {
     auth: { getUser: async () => ({ data: { user: { id: "admin-id" } }, error: null }) },
     rpc: async () => ({ data: allowed, error: null }),
@@ -68,13 +72,26 @@ function clients({
         return { error: deleteError };
       },
     } },
-    rpc: async () => ({ data: null, error: membershipError }),
+    rpc: async (name, params) => {
+      rpcCalls.push({ name, params });
+      if (name === "get_admin_invitation_for_email") {
+        return {
+          data: trackedInvitation ? [trackedInvitation] : [],
+          error: trackingLookupError,
+        };
+      }
+      if (name === "record_admin_invitation") {
+        return { data: "invitation-id", error: trackingError };
+      }
+      throw new Error(`Unexpected RPC: ${name}`);
+    },
   };
   let calls = 0;
   return {
     createClientImpl: () => (calls++ === 0 ? userClient : adminClient),
     deleted: () => deletedUser,
     inviteCalls: () => inviteCalls,
+    rpcCalls: () => rpcCalls,
   };
 }
 
@@ -149,8 +166,8 @@ test("only replaces an unaccepted user created by the invitation flow", () => {
   }), false);
 });
 
-test("invites and provisions an authorized staff member", async () => {
-  const { response } = await invoke();
+test("invites and records a pending staff member without activating membership", async () => {
+  const { response, mock } = await invoke();
   assert.equal(response.statusCode, 201);
   assert.deepEqual(response.body.invitation, {
     email: "new.staff@example.com",
@@ -158,6 +175,51 @@ test("invites and provisions an authorized staff member", async () => {
     userId: "invited-id",
     reissued: false,
   });
+  assert.deepEqual(mock.rpcCalls().map(({ name }) => name), [
+    "get_admin_invitation_for_email",
+    "record_admin_invitation",
+  ]);
+  assert.deepEqual(mock.rpcCalls()[1].params, {
+    target_user_id: "invited-id",
+    target_email: "new.staff@example.com",
+    target_role: "editor",
+    invited_by_user: "admin-id",
+    expires_in_seconds: 3600,
+    reissued: false,
+  });
+});
+
+test("reissues a tracked pending invitation even if a scanner confirmed its Auth user", async () => {
+  const { response, mock } = await invoke({
+    trackedInvitation: {
+      invitation_id: "pending-id",
+      auth_user_id: "scanner-confirmed-user-id",
+      status: "pending",
+      resend_count: 0,
+    },
+  });
+
+  assert.equal(response.statusCode, 201);
+  assert.equal(mock.deleted(), "scanner-confirmed-user-id");
+  assert.equal(mock.inviteCalls(), 1);
+  assert.equal(response.body.invitation.reissued, true);
+  assert.equal(mock.rpcCalls()[1].params.reissued, true);
+});
+
+test("never reissues a tracked accepted invitation", async () => {
+  const { response, mock } = await invoke({
+    trackedInvitation: {
+      invitation_id: "accepted-id",
+      auth_user_id: "confirmed-user-id",
+      status: "accepted",
+      resend_count: 0,
+    },
+  });
+
+  assert.equal(response.statusCode, 409);
+  assert.equal(response.body.code, "ACCOUNT_EXISTS");
+  assert.equal(mock.deleted(), null);
+  assert.equal(mock.inviteCalls(), 0);
 });
 
 test("replaces an expired pending invitation and sends a fresh one", async () => {
@@ -212,8 +274,9 @@ test("does not delete a pending invitation when user lookup fails", async () => 
   assert.equal(mock.deleted(), null);
 });
 
-test("rolls back the Auth user when membership provisioning fails", async () => {
-  const { response, mock } = await invoke({ membershipError: { message: "failed" } });
+test("rolls back the Auth user when invitation tracking fails", async () => {
+  const { response, mock } = await invoke({ trackingError: { message: "failed" } });
   assert.equal(response.statusCode, 500);
+  assert.equal(response.body.code, "INVITATION_TRACKING_FAILED");
   assert.equal(mock.deleted(), "invited-id");
 });

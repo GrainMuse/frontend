@@ -55,6 +55,11 @@ npx supabase migration list
 Review the dry-run output before applying. Never use `db reset --linked` on a
 production project.
 
+The administrator invitation lifecycle migration must be applied before deploying
+the frontend API that calls `get_admin_invitation_for_email` and
+`record_admin_invitation`. Configure `ADMIN_INVITE_EXPIRY_SECONDS` on the frontend
+host to match Supabase Auth's Email OTP Expiration value.
+
 ## 4. Configure Edge Function secrets
 
 Set these in the staging project's Edge Function Secrets settings:
