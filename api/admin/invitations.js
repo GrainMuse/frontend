@@ -17,8 +17,10 @@ export function readBearer(request) {
 
 export function requireEnvironment() {
   const values = {
-    url: process.env.VITE_SUPABASE_URL,
-    publishableKey: process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+    url: process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL,
+    publishableKey:
+      process.env.SUPABASE_PUBLISHABLE_KEY ??
+      process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
     secretKey: process.env.SUPABASE_SECRET_KEY,
     redirectTo: process.env.ADMIN_INVITE_REDIRECT_URL,
   };
@@ -26,6 +28,46 @@ export function requireEnvironment() {
     throw new Error("Administrator invitation environment is incomplete.");
   }
   return values;
+}
+
+export function classifyInviteError(error) {
+  const fingerprint = [error?.code, error?.status, error?.message]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  if (/rate|limit|too many/.test(fingerprint)) {
+    return {
+      status: 429,
+      code: "EMAIL_RATE_LIMITED",
+      error: "Email sending is temporarily rate limited. Try later or review the Supabase SMTP limits.",
+    };
+  }
+  if (/already|registered|exists|user_already_exists/.test(fingerprint)) {
+    return {
+      status: 409,
+      code: "ACCOUNT_EXISTS",
+      error: "That email already belongs to an account.",
+    };
+  }
+  if (/redirect|redirect_to|not allowed/.test(fingerprint)) {
+    return {
+      status: 400,
+      code: "INVITE_REDIRECT_INVALID",
+      error: "The invitation redirect is not allowed by the Supabase Auth configuration.",
+    };
+  }
+  if (/smtp|email|mail|send|delivery/.test(fingerprint)) {
+    return {
+      status: 502,
+      code: "EMAIL_DELIVERY_FAILED",
+      error: "Supabase could not deliver the invitation email. Review the Auth and SMTP logs.",
+    };
+  }
+  return {
+    status: 502,
+    code: "INVITATION_UPSTREAM_ERROR",
+    error: "Supabase rejected the invitation. Review the production Auth logs.",
+  };
 }
 
 export function createInvitationHandler({
@@ -84,11 +126,15 @@ export function createInvitationHandler({
       data: { invited_role: role },
     });
   if (inviteError) {
-    const duplicate = /already|registered|exists/i.test(inviteError.message);
-    return send(response, duplicate ? 409 : 502, {
-      error: duplicate
-        ? "That email already belongs to an account."
-        : "The invitation could not be sent. Try again shortly.",
+    const classified = classifyInviteError(inviteError);
+    console.error("Supabase invitation failed", {
+      code: inviteError.code ?? "unknown",
+      status: inviteError.status ?? "unknown",
+      category: classified.code,
+    });
+    return send(response, classified.status, {
+      error: classified.error,
+      code: classified.code,
     });
   }
 
