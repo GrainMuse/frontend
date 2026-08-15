@@ -81,7 +81,7 @@ async function sendWithSupabase(form, turnstileToken) {
   return {
     ok: true,
     notificationSent: data.notificationSent !== false,
-    confirmationSent: false,
+    confirmationSent: data.confirmationSent === true,
     requestId: data.requestId,
   };
 }

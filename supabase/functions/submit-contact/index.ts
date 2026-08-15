@@ -1,6 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { corsHeaders, preflightResponse } from "./cors.js";
-import { sendContactNotification } from "./notification.js";
+import {
+  sendContactConfirmation,
+  sendContactNotification,
+} from "./notification.js";
 
 const MAX_BODY_BYTES = 12_000;
 const IP_LIMIT = 5;
@@ -191,7 +194,7 @@ async function updateNotificationStatus(
   if (!response.ok) throw new Error(`notification_update_${response.status}`);
 }
 
-async function sendNotification(
+async function sendNotifications(
   submissionId: string,
   value: {
     name: string;
@@ -200,16 +203,17 @@ async function sendNotification(
     type: string;
     message: string;
   },
-): Promise<boolean> {
+): Promise<{ notificationSent: boolean; confirmationSent: boolean }> {
   try {
     const provider = Deno.env.get("CONTACT_EMAIL_PROVIDER")?.trim().toLowerCase() ||
       "resend";
     const toEmail = requiredEnv("CONTACT_TO_EMAIL");
     const config = provider === "emailjs"
       ? {
-        serviceId: requiredEnv("VITE_EMAILJS_SERVICE_ID"),
-        templateId: requiredEnv("VITE_EMAILJS_TEMPLATE_ID"),
-        publicKey: requiredEnv("VITE_EMAILJS_PUBLIC_KEY"),
+        serviceId: requiredEnv("EMAILJS_SERVICE_ID"),
+        templateId: requiredEnv("EMAILJS_TEMPLATE_ID"),
+        autoreplyTemplateId: requiredEnv("EMAILJS_AUTOREPLY_TEMPLATE_ID"),
+        publicKey: requiredEnv("EMAILJS_PUBLIC_KEY"),
         privateKey: Deno.env.get("EMAILJS_PRIVATE_KEY")?.trim() || undefined,
         toEmail,
       }
@@ -219,14 +223,29 @@ async function sendNotification(
         toEmail,
       };
 
-    return await sendContactNotification({
+    const notificationPromise = sendContactNotification({
       provider,
       config,
       submissionId,
       value,
     });
+
+    const confirmationPromise = provider === "emailjs"
+      ? sendContactConfirmation({ config, value })
+      : Promise.resolve(false);
+    const [notificationResult, confirmationResult] = await Promise.allSettled([
+      notificationPromise,
+      confirmationPromise,
+    ]);
+
+    return {
+      notificationSent: notificationResult.status === "fulfilled" &&
+        notificationResult.value,
+      confirmationSent: confirmationResult.status === "fulfilled" &&
+        confirmationResult.value,
+    };
   } catch {
-    return false;
+    return { notificationSent: false, confirmationSent: false };
   }
 }
 
@@ -307,7 +326,10 @@ Deno.serve(async (request: Request) => {
     }
 
     const submissionId = await insertSubmission(validation.value);
-    const notificationSent = await sendNotification(submissionId, validation.value);
+    const { notificationSent, confirmationSent } = await sendNotifications(
+      submissionId,
+      validation.value,
+    );
 
     try {
       await updateNotificationStatus(
@@ -321,11 +343,15 @@ Deno.serve(async (request: Request) => {
     if (!notificationSent) {
       console.error(JSON.stringify({ event: "notification_delivery_failed", requestId }));
     }
+    if (!confirmationSent) {
+      console.error(JSON.stringify({ event: "confirmation_delivery_failed", requestId }));
+    }
 
     return jsonResponse(origin, 202, {
       ok: true,
       requestId,
       notificationSent,
+      confirmationSent,
     });
   } catch (error) {
     console.error(JSON.stringify({
