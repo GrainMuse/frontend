@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import {
   Archive,
   Boxes,
@@ -16,6 +16,7 @@ import {
   Search,
   ShieldCheck,
   Trash2,
+  UserPlus,
   Users,
   X,
 } from "lucide-react";
@@ -35,6 +36,7 @@ const sections = [
   ["team", "Team", Users],
   ["content", "Site content", FileJson],
   ["enquiries", "Enquiries", Inbox],
+  ["staff", "Staff access", UserPlus],
 ];
 const empty = {
   products: {
@@ -134,6 +136,144 @@ function Login({ onReady }) {
         <div className={styles.grainOrb} />
       </aside>
     </main>
+  );
+}
+
+function AcceptInvite() {
+  const navigate = useNavigate();
+  const [state, setState] = useState("checking");
+  const [session, setSession] = useState(null);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    const hashError = new URLSearchParams(window.location.hash.slice(1)).get(
+      "error_description",
+    );
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!active) return;
+      if (hashError) {
+        setError(decodeURIComponent(hashError.replace(/\+/g, " ")));
+        setState("invalid");
+        return;
+      }
+      if (!data.session) {
+        setState("invalid");
+        return;
+      }
+      const member = await fetchAdminMembership(data.session.user.id);
+      if (!member?.active) {
+        await supabase.auth.signOut();
+        setError("This invitation does not grant active staff access.");
+        setState("invalid");
+        return;
+      }
+      window.history.replaceState({}, document.title, "/admin/accept-invite");
+      setSession(data.session);
+      setState("ready");
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  async function submit(event) {
+    event.preventDefault();
+    setError("");
+    if (password.length < 12) {
+      setError("Use at least 12 characters.");
+      return;
+    }
+    if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/\d/.test(password)) {
+      setError("Include uppercase, lowercase, and numeric characters.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("The passwords do not match.");
+      return;
+    }
+    setState("saving");
+    const { error: updateError } = await supabase.auth.updateUser({ password });
+    if (updateError) {
+      setError("Your password could not be saved. Request a new invitation.");
+      setState("ready");
+      return;
+    }
+    navigate("/admin", { replace: true });
+  }
+
+  return (
+    <main className={styles.login}>
+      <section className={styles.loginPanel}>
+        <div className={styles.brandMark}><Leaf size={22} /></div>
+        <p className={styles.eyebrow}>SECURE STAFF ONBOARDING</p>
+        <h1>Create your password.</h1>
+        {state === "checking" && <p>Validating your invitation…</p>}
+        {state === "invalid" && (
+          <>
+            <p role="alert" className={styles.error}>
+              {error || "This invitation is invalid or has expired."}
+            </p>
+            <a className={styles.secondary} href="/admin">Return to sign in</a>
+          </>
+        )}
+        {(state === "ready" || state === "saving") && (
+          <form onSubmit={submit}>
+            <p className={styles.inviteIdentity}>{session?.user.email}</p>
+            <label>New password<input type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
+            <label>Confirm password<input type="password" autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required /></label>
+            <small>At least 12 characters with uppercase, lowercase, and a number.</small>
+            {error && <p role="alert" className={styles.error}>{error}</p>}
+            <button className={styles.primary} disabled={state === "saving"}>
+              {state === "saving" ? "Saving…" : "Continue to authenticator setup"}
+            </button>
+          </form>
+        )}
+      </section>
+      <aside className={styles.loginArt}><span>INVITATION ACCEPTED</span><blockquote>One secure step, then your workspace is ready.</blockquote><div className={styles.grainOrb} /></aside>
+    </main>
+  );
+}
+
+function StaffInvites({ onSent }) {
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("editor");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  async function submit(event) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    const { data: sessionData } = await supabase.auth.getSession();
+    const response = await fetch("/api/admin/invitations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sessionData.session?.access_token ?? ""}`,
+      },
+      body: JSON.stringify({ email, role }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) setError(result.error || "The invitation could not be sent.");
+    else {
+      onSent(`Invitation sent to ${email.trim().toLowerCase()}.`);
+      setEmail("");
+      setRole("editor");
+    }
+    setBusy(false);
+  }
+  return (
+    <section className={styles.staffPanel}>
+      <div><p className={styles.eyebrow}>CONTROLLED ACCESS</p><h2>Invite a staff member</h2><p>The recipient will establish a password and authenticator before gaining access.</p></div>
+      <form onSubmit={submit}>
+        <label>Email address<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
+        <label>Role<select value={role} onChange={(e) => setRole(e.target.value)}><option value="editor">Editor — manage content</option><option value="admin">Administrator — content, enquiries and staff</option></select></label>
+        {error && <p role="alert" className={styles.error}>{error}</p>}
+        <button className={styles.primary} disabled={busy}><UserPlus size={17} />{busy ? "Sending…" : "Send secure invitation"}</button>
+      </form>
+    </section>
   );
 }
 
@@ -463,7 +603,7 @@ function RecordForm({ type, initial, categories, onClose, onSave }) {
   );
 }
 
-export default function Admin() {
+function AdminPortal() {
   const navigate = useNavigate();
   const [session, setSession] = useState(undefined);
   const [membership, setMembership] = useState(undefined);
@@ -605,7 +745,7 @@ export default function Admin() {
         </div>
         <nav>
           {sections
-            .filter(([id]) => id !== "enquiries" || membership.role === "admin")
+            .filter(([id]) => !["enquiries", "staff"].includes(id) || membership.role === "admin")
             .map(([id, label, Icon]) => (
               <button
                 className={section === id ? styles.active : ""}
@@ -713,6 +853,8 @@ export default function Admin() {
               ))}
             </section>
           </div>
+        ) : section === "staff" ? (
+          <StaffInvites onSent={setNotice} />
         ) : (
           <section className={styles.manager}>
             <header>
@@ -821,5 +963,14 @@ export default function Admin() {
         />
       )}
     </div>
+  );
+}
+
+export default function Admin() {
+  const location = useLocation();
+  return location.pathname === "/admin/accept-invite" ? (
+    <AcceptInvite />
+  ) : (
+    <AdminPortal />
   );
 }

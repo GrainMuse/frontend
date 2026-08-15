@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(40);
+select plan(43);
 
 -- Schema protection is never optional for Data API tables.
 select ok(
@@ -115,6 +115,30 @@ select ok(
     'UPDATE'
   ),
   'the contact function cannot rewrite submitted contact details'
+);
+select ok(
+  not pg_catalog.has_function_privilege(
+    'anon',
+    'public.provision_admin_user(uuid,public.admin_role)',
+    'EXECUTE'
+  ),
+  'anonymous users cannot provision staff membership'
+);
+select ok(
+  not pg_catalog.has_function_privilege(
+    'authenticated',
+    'public.provision_admin_user(uuid,public.admin_role)',
+    'EXECUTE'
+  ),
+  'browser-authenticated users cannot provision staff membership'
+);
+select ok(
+  pg_catalog.has_function_privilege(
+    'service_role',
+    'public.provision_admin_user(uuid,public.admin_role)',
+    'EXECUTE'
+  ),
+  'the trusted invitation server can provision staff membership'
 );
 
 -- Fixtures are created as the migration owner before assuming API roles.
