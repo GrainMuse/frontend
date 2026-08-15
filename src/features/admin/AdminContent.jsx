@@ -23,10 +23,15 @@ export function StaffInvites({ onSent }) {
       body: JSON.stringify({ email, role }),
     });
     const result = await response.json().catch(() => ({}));
-    if (!response.ok)
-      setError(result.error || "The invitation could not be sent.");
-    else {
-      onSent(`Invitation sent to ${email.trim().toLowerCase()}.`);
+      if (!response.ok)
+        setError(result.error || "The invitation could not be sent.");
+      else {
+        const recipient = email.trim().toLowerCase();
+        onSent(
+          result.invitation?.reissued
+            ? `A fresh invitation was sent to ${recipient}. The previous link is no longer valid.`
+            : `Invitation sent to ${recipient}.`,
+        );
       setEmail("");
       setRole("editor");
     }

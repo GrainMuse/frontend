@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   classifyInviteError,
   createInvitationHandler,
+  isReplaceablePendingInvite,
   readBearer,
 } from "./invitations.js";
 
@@ -36,18 +37,36 @@ function request(overrides = {}) {
   };
 }
 
-function clients({ allowed = true, inviteError = null, membershipError = null } = {}) {
+function clients({
+  allowed = true,
+  inviteError = null,
+  membershipError = null,
+  existingUser = null,
+  listUsersError = null,
+  deleteError = null,
+} = {}) {
   let deletedUser = null;
+  let inviteCalls = 0;
   const userClient = {
     auth: { getUser: async () => ({ data: { user: { id: "admin-id" } }, error: null }) },
     rpc: async () => ({ data: allowed, error: null }),
   };
   const adminClient = {
     auth: { admin: {
-      inviteUserByEmail: async () => ({
-        data: { user: { id: "invited-id" } }, error: inviteError,
+      inviteUserByEmail: async () => {
+        inviteCalls += 1;
+        return inviteCalls === 1 && inviteError
+          ? { data: { user: null }, error: inviteError }
+          : { data: { user: { id: "invited-id" } }, error: null };
+      },
+      listUsers: async () => ({
+        data: { users: existingUser ? [existingUser] : [] },
+        error: listUsersError,
       }),
-      deleteUser: async (id) => { deletedUser = id; return { error: null }; },
+      deleteUser: async (id) => {
+        deletedUser = id;
+        return { error: deleteError };
+      },
     } },
     rpc: async () => ({ data: null, error: membershipError }),
   };
@@ -55,6 +74,7 @@ function clients({ allowed = true, inviteError = null, membershipError = null } 
   return {
     createClientImpl: () => (calls++ === 0 ? userClient : adminClient),
     deleted: () => deletedUser,
+    inviteCalls: () => inviteCalls,
   };
 }
 
@@ -113,12 +133,83 @@ test("classifies common Supabase invitation failures safely", () => {
   );
 });
 
+test("only replaces an unaccepted user created by the invitation flow", () => {
+  assert.equal(isReplaceablePendingInvite({
+    id: "pending-id",
+    invited_at: "2026-08-15T10:00:00Z",
+  }), true);
+  assert.equal(isReplaceablePendingInvite({
+    id: "confirmed-id",
+    invited_at: "2026-08-15T10:00:00Z",
+    email_confirmed_at: "2026-08-15T10:05:00Z",
+  }), false);
+  assert.equal(isReplaceablePendingInvite({
+    id: "signup-id",
+    created_at: "2026-08-15T10:00:00Z",
+  }), false);
+});
+
 test("invites and provisions an authorized staff member", async () => {
   const { response } = await invoke();
   assert.equal(response.statusCode, 201);
   assert.deepEqual(response.body.invitation, {
-    email: "new.staff@example.com", role: "editor", userId: "invited-id",
+    email: "new.staff@example.com",
+    role: "editor",
+    userId: "invited-id",
+    reissued: false,
   });
+});
+
+test("replaces an expired pending invitation and sends a fresh one", async () => {
+  const { response, mock } = await invoke({
+    inviteError: { code: "user_already_exists" },
+    existingUser: {
+      id: "stale-invite-id",
+      email: "new.staff@example.com",
+      invited_at: "2026-08-15T10:00:00Z",
+      email_confirmed_at: null,
+      confirmed_at: null,
+      last_sign_in_at: null,
+    },
+  });
+
+  assert.equal(response.statusCode, 201);
+  assert.equal(mock.deleted(), "stale-invite-id");
+  assert.equal(mock.inviteCalls(), 2);
+  assert.deepEqual(response.body.invitation, {
+    email: "new.staff@example.com",
+    role: "editor",
+    userId: "invited-id",
+    reissued: true,
+  });
+});
+
+test("never replaces a confirmed existing account", async () => {
+  const { response, mock } = await invoke({
+    inviteError: { code: "user_already_exists" },
+    existingUser: {
+      id: "confirmed-id",
+      email: "new.staff@example.com",
+      invited_at: "2026-08-15T10:00:00Z",
+      email_confirmed_at: "2026-08-15T10:05:00Z",
+    },
+  });
+
+  assert.equal(response.statusCode, 409);
+  assert.equal(response.body.code, "ACCOUNT_EXISTS");
+  assert.equal(mock.deleted(), null);
+  assert.equal(mock.inviteCalls(), 1);
+});
+
+test("does not delete a pending invitation when user lookup fails", async () => {
+  const { response, mock } = await invoke({
+    inviteError: { code: "user_already_exists" },
+    listUsersError: { code: "lookup_failed", status: 500 },
+  });
+
+  assert.equal(response.statusCode, 502);
+  assert.equal(response.body.code, "INVITATION_LOOKUP_FAILED");
+  assert.equal(mock.deleted(), null);
 });
 
 test("rolls back the Auth user when membership provisioning fails", async () => {

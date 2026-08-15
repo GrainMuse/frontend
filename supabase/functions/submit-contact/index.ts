@@ -1,9 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { corsHeaders, preflightResponse } from "./cors.js";
-import {
-  sendContactConfirmation,
-  sendContactNotification,
-} from "./notification.js";
+import { sendContactNotification } from "./notification.js";
 
 const MAX_BODY_BYTES = 12_000;
 const IP_LIMIT = 5;
@@ -50,7 +47,11 @@ function failureCode(error: unknown): string {
     return "configuration_invalid";
   }
   if (error.message.startsWith("Missing required environment variable:")) {
-    return "configuration_missing";
+    const name = error.message.slice(error.message.indexOf(":") + 1).trim();
+    return `configuration_missing_${name}`;
+  }
+  if (error.message === "Unsupported contact email provider") {
+    return "email_provider_invalid";
   }
 
   return "unexpected";
@@ -196,6 +197,7 @@ async function updateNotificationStatus(
 
 async function sendNotifications(
   submissionId: string,
+  requestId: string,
   value: {
     name: string;
     email: string;
@@ -203,16 +205,22 @@ async function sendNotifications(
     type: string;
     message: string;
   },
-): Promise<{ notificationSent: boolean; confirmationSent: boolean }> {
+): Promise<{
+  notificationSent: boolean;
+  confirmationSent: boolean;
+  notificationStatus?: number;
+  confirmationStatus?: number;
+}> {
   try {
-    const provider = Deno.env.get("CONTACT_EMAIL_PROVIDER")?.trim().toLowerCase() ||
-      "resend";
+    const provider = requiredEnv("CONTACT_EMAIL_PROVIDER").toLowerCase();
+    if (provider !== "emailjs" && provider !== "resend") {
+      throw new Error("Unsupported contact email provider");
+    }
     const toEmail = requiredEnv("CONTACT_TO_EMAIL");
     const config = provider === "emailjs"
       ? {
         serviceId: requiredEnv("EMAILJS_SERVICE_ID"),
         templateId: requiredEnv("EMAILJS_TEMPLATE_ID"),
-        autoreplyTemplateId: requiredEnv("EMAILJS_AUTOREPLY_TEMPLATE_ID"),
         publicKey: requiredEnv("EMAILJS_PUBLIC_KEY"),
         privateKey: Deno.env.get("EMAILJS_PRIVATE_KEY")?.trim() || undefined,
         toEmail,
@@ -223,28 +231,35 @@ async function sendNotifications(
         toEmail,
       };
 
-    const notificationPromise = sendContactNotification({
+    const notificationResult = await sendContactNotification({
       provider,
       config,
       submissionId,
       value,
-    });
+    }).catch(() => ({ ok: false, status: 0 }));
 
-    const confirmationPromise = provider === "emailjs"
-      ? sendContactConfirmation({ config, value })
-      : Promise.resolve(false);
-    const [notificationResult, confirmationResult] = await Promise.allSettled([
-      notificationPromise,
-      confirmationPromise,
-    ]);
+    if (provider !== "emailjs") {
+      return {
+        notificationSent: notificationResult.ok,
+        confirmationSent: false,
+        notificationStatus: notificationResult.status,
+      };
+    }
 
     return {
-      notificationSent: notificationResult.status === "fulfilled" &&
-        notificationResult.value,
-      confirmationSent: confirmationResult.status === "fulfilled" &&
-        confirmationResult.value,
+      notificationSent: notificationResult.ok,
+      // EmailJS triggers the linked auto-reply from the same accepted template
+      // request. The auto-reply template is configured in the EmailJS dashboard.
+      confirmationSent: notificationResult.ok,
+      notificationStatus: notificationResult.status,
+      confirmationStatus: notificationResult.status,
     };
-  } catch {
+  } catch (error) {
+    console.error(JSON.stringify({
+      event: "email_delivery_setup_failed",
+      requestId,
+      failureCode: failureCode(error),
+    }));
     return { notificationSent: false, confirmationSent: false };
   }
 }
@@ -326,8 +341,14 @@ Deno.serve(async (request: Request) => {
     }
 
     const submissionId = await insertSubmission(validation.value);
-    const { notificationSent, confirmationSent } = await sendNotifications(
+    const {
+      notificationSent,
+      confirmationSent,
+      notificationStatus,
+      confirmationStatus,
+    } = await sendNotifications(
       submissionId,
+      requestId,
       validation.value,
     );
 
@@ -341,10 +362,18 @@ Deno.serve(async (request: Request) => {
     }
 
     if (!notificationSent) {
-      console.error(JSON.stringify({ event: "notification_delivery_failed", requestId }));
+      console.error(JSON.stringify({
+        event: "notification_delivery_failed",
+        requestId,
+        providerStatus: notificationStatus,
+      }));
     }
     if (!confirmationSent) {
-      console.error(JSON.stringify({ event: "confirmation_delivery_failed", requestId }));
+      console.error(JSON.stringify({
+        event: "confirmation_delivery_failed",
+        requestId,
+        providerStatus: confirmationStatus,
+      }));
     }
 
     return jsonResponse(origin, 202, {
