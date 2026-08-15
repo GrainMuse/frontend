@@ -33,8 +33,14 @@ The `submit-contact` function requires:
 - Exact comma-separated origins in `ALLOWED_ORIGINS` (no wildcard)
 - Cloudflare Turnstile secret and expected hostnames
 - A random `RATE_LIMIT_SALT` of at least 32 characters
-- A Resend API key and a sender on a verified domain
-- A destination mailbox for contact notifications
+- `CONTACT_EMAIL_PROVIDER=emailjs` with EmailJS service, contact-template and
+  public-key settings, or `CONTACT_EMAIL_PROVIDER=resend` with a Resend API key
+  and verified sender
+- A destination mailbox in `CONTACT_TO_EMAIL`
+
+With EmailJS, keep the template's recipient fixed to the Grain Muse mailbox.
+Set `EMAILJS_PRIVATE_KEY` when private-key authorization is enabled in the
+EmailJS account. These are Edge Function secrets, not browser `VITE_` values.
 
 Run validation tests with:
 
@@ -51,8 +57,8 @@ npm run supabase:functions
 
 The checked-in example uses Cloudflare's official always-pass test credentials.
 The direct dummy token is `XXXX.DUMMY.TOKEN.XXXX`; these credentials must never
-be copied to staging or production. A placeholder Resend key intentionally
-exercises notification failure handling: the enquiry remains stored, its
+be copied to staging or production. Placeholder email-provider credentials
+intentionally exercise notification failure handling: the enquiry remains stored, its
 `notification_status` becomes `failed`, and the endpoint returns HTTP 202 with
 `notificationSent: false` instead of encouraging a duplicate browser retry.
 
@@ -67,8 +73,8 @@ npm run supabase:start
 Use `npm run supabase:start:full` only when local Logs Explorer support is
 required and Docker Desktop has been configured for the Analytics service.
 
-The production website still uses EmailJS. Do not switch the production React form until the
-function, CAPTCHA widget, database policies, and email delivery pass staging tests.
+The hybrid production path uses the Supabase contact backend so every accepted
+enquiry is stored before EmailJS or Resend notification delivery is attempted.
 
 ## Local browser integration test
 
@@ -89,7 +95,7 @@ npm run supabase:functions
 npm run dev
 ```
 
-With the placeholder Resend credential from `functions/.env.local`, a successful
+With placeholder provider credentials from `functions/.env.local`, a successful
 browser test displays the stored-enquiry confirmation and delayed-notification
 notice. Inspect the synthetic row in local Studio, then delete it after testing.
 Restart Vite whenever a `VITE_` value changes because those values are loaded at
@@ -106,8 +112,9 @@ VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxx
 VITE_TURNSTILE_SITE_KEY=your_staging_site_key
 ```
 
-Leave `VITE_CONTACT_BACKEND=emailjs` in production during verification. Switching
-that single value back provides a rollback without reverting application code.
+Use `VITE_CONTACT_BACKEND=supabase` in production after verification. Switching
+to `emailjs` remains an emergency browser-direct fallback, but fallback submissions
+are not stored in the admin enquiry database.
 
 Turnstile is rendered explicitly for the React SPA. Its token is cleared and the
 widget is reset after failed submissions because verification tokens are single-use.

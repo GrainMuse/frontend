@@ -63,9 +63,12 @@ Set these in the staging project's Edge Function Secrets settings:
 - `TURNSTILE_SECRET_KEY`
 - `TURNSTILE_EXPECTED_HOSTNAMES`
 - `RATE_LIMIT_SALT` - at least 32 cryptographically random characters
-- `RESEND_API_KEY`
+- `CONTACT_EMAIL_PROVIDER` - `emailjs` or `resend`
 - `CONTACT_TO_EMAIL`
-- `CONTACT_FROM_EMAIL` - sender on a Resend-verified domain
+- For EmailJS: `EMAILJS_SERVICE_ID`, `EMAILJS_TEMPLATE_ID`, and
+  `EMAILJS_PUBLIC_KEY`; also set `EMAILJS_PRIVATE_KEY` when private-key
+  authorization is enabled in EmailJS
+- For Resend: `RESEND_API_KEY` and `CONTACT_FROM_EMAIL` using a verified domain
 
 Do not put these values in Vite variables, Git, shell history, or this document.
 
@@ -93,7 +96,8 @@ Run one successful submission and verify all of the following:
 - Browser receives HTTP 202 from `submit-contact`
 - One row appears in `contact_submissions`
 - Turnstile token cannot be reused
-- Resend notification arrives at the configured mailbox
+- Notification from the configured EmailJS or Resend provider arrives at the
+  configured mailbox
 - `notification_status` becomes `sent`
 - Disallowed origins receive HTTP 403
 - Repeated submissions eventually receive HTTP 429
@@ -102,6 +106,6 @@ Run one successful submission and verify all of the following:
 ## 7. Production promotion
 
 Use a separate production project and production-only secrets. Repeat migration
-dry-run and migration-list checks. Keep `VITE_CONTACT_BACKEND=emailjs` until the
-production function health check succeeds, then switch the frontend variable to
-`supabase`. Reverting that one variable is the contact-path rollback.
+dry-run and migration-list checks. Keep the browser-direct EmailJS fallback only
+until the production function health check succeeds, then switch the frontend
+variable to `supabase`. Reverting that one variable is the contact-path rollback.
