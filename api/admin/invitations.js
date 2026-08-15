@@ -5,6 +5,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ALLOWED_ROLES = new Set(["editor", "admin"]);
 const USERS_PAGE_SIZE = 1_000;
 const MAX_USER_PAGES = 100;
+const DEFAULT_INVITE_EXPIRY_SECONDS = 3_600;
 
 function send(response, status, body) {
   response.status(status).setHeader("Content-Type", "application/json");
@@ -25,8 +26,19 @@ export function requireEnvironment() {
       process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
     secretKey: process.env.SUPABASE_SECRET_KEY,
     redirectTo: process.env.ADMIN_INVITE_REDIRECT_URL,
+    inviteExpirySeconds: Number(
+      process.env.ADMIN_INVITE_EXPIRY_SECONDS ?? DEFAULT_INVITE_EXPIRY_SECONDS,
+    ),
   };
-  if (Object.values(values).some((value) => !value)) {
+  if (
+    !values.url ||
+    !values.publishableKey ||
+    !values.secretKey ||
+    !values.redirectTo ||
+    !Number.isInteger(values.inviteExpirySeconds) ||
+    values.inviteExpirySeconds < 60 ||
+    values.inviteExpirySeconds > 604_800
+  ) {
     throw new Error("Administrator invitation environment is incomplete.");
   }
   return values;
@@ -152,14 +164,63 @@ export function createInvitationHandler({
   const adminClient = createClientImpl(env.url, env.secretKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
+  const { data: trackedRows, error: trackingLookupError } = await adminClient.rpc(
+    "get_admin_invitation_for_email",
+    { target_email: email },
+  );
+  if (trackingLookupError) {
+    console.error("Supabase invitation status lookup failed", {
+      code: trackingLookupError.code ?? "unknown",
+      status: trackingLookupError.status ?? "unknown",
+    });
+    return send(response, 503, {
+      error: "Invitation lifecycle storage is unavailable.",
+      code: "INVITATION_STATUS_UNAVAILABLE",
+    });
+  }
+
+  const trackedInvitation = Array.isArray(trackedRows)
+    ? trackedRows[0] ?? null
+    : trackedRows ?? null;
+  let reissued = Boolean(trackedInvitation);
+
+  if (
+    trackedInvitation &&
+    !new Set(["pending", "expired"]).has(trackedInvitation.status)
+  ) {
+    return send(response, 409, {
+      error: "That email already belongs to an account.",
+      code: "ACCOUNT_EXISTS",
+    });
+  }
+
+  if (trackedInvitation?.auth_user_id) {
+    const { error: deleteError } = await adminClient.auth.admin.deleteUser(
+      trackedInvitation.auth_user_id,
+    );
+    if (deleteError) {
+      console.error("Supabase tracked invitation replacement failed", {
+        code: deleteError.code ?? "unknown",
+        status: deleteError.status ?? "unknown",
+      });
+      return send(response, 502, {
+        error: "The pending invitation could not be replaced safely.",
+        code: "INVITATION_REPLACEMENT_FAILED",
+      });
+    }
+  }
+
   const invite = () => adminClient.auth.admin.inviteUserByEmail(email, {
       redirectTo: env.redirectTo,
-      data: { invited_role: role },
+      data: { invitation_pending: true },
     });
   let { data: invitation, error: inviteError } = await invite();
-  let reissued = false;
 
-  if (inviteError && classifyInviteError(inviteError).code === "ACCOUNT_EXISTS") {
+  if (
+    !trackedInvitation &&
+    inviteError &&
+    classifyInviteError(inviteError).code === "ACCOUNT_EXISTS"
+  ) {
     const { user: existingUser, error: lookupError } =
       await findUserByEmail(adminClient, email);
     if (lookupError) {
@@ -210,14 +271,26 @@ export function createInvitationHandler({
     });
   }
 
-  const { error: membershipError } = await adminClient.rpc(
-    "provision_admin_user",
-    { target_user_id: invitation.user.id, target_role: role },
+  const { error: trackingError } = await adminClient.rpc(
+    "record_admin_invitation",
+    {
+      target_user_id: invitation.user.id,
+      target_email: email,
+      target_role: role,
+      invited_by_user: userData.user.id,
+      expires_in_seconds: env.inviteExpirySeconds,
+      reissued,
+    },
   );
-  if (membershipError) {
+  if (trackingError) {
+    console.error("Supabase invitation tracking failed", {
+      code: trackingError.code ?? "unknown",
+      status: trackingError.status ?? "unknown",
+    });
     await adminClient.auth.admin.deleteUser(invitation.user.id);
     return send(response, 500, {
-      error: "The invitation could not be provisioned safely.",
+      error: "The invitation could not be recorded safely.",
+      code: "INVITATION_TRACKING_FAILED",
     });
   }
 

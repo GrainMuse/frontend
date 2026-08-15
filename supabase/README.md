@@ -22,6 +22,20 @@ promotion checklist.
 - MFA-backed editors manage content; only administrators can access enquiries.
 - Supabase secret/service-role keys must never use a `VITE_` environment variable.
 
+## Administrator invitation lifecycle
+
+Invitations are tracked in `private.admin_invitations`. Sending an invitation
+creates an unconfirmed Supabase Auth user and a `pending` record, but it does not
+create `admin_users` membership. After the recipient follows the link and chooses
+a password, `accept_admin_invitation()` atomically marks the invitation `accepted`
+and activates the selected role.
+
+Submitting the same email again rotates only a tracked `pending` or `expired`
+invitation. The old Auth user and link are replaced, the resend counter advances,
+and confirmed/accepted accounts remain protected. Set
+`ADMIN_INVITE_EXPIRY_SECONDS` in the deployed frontend to the same value as the
+Supabase Auth **Email OTP Expiration** setting.
+
 ## Contact function configuration
 
 Copy `functions/.env.example` to `functions/.env.local` and use test credentials

@@ -94,8 +94,12 @@ test.describe.serial("admin portal", () => {
     expect(generateError).toBeNull();
     invitationLink = generated.properties.action_link;
     createdUsers.push(generated.user.id);
-    await sql`insert into public.admin_users (user_id, role, active)
-      values (${generated.user.id}, 'editor', true)`;
+    await sql`insert into private.admin_invitations
+      (auth_user_id, email, role, status, invited_by, expires_at)
+      values (
+        ${generated.user.id}, ${invitedEmail}, 'editor', 'pending',
+        ${createdUsers[0]}, now() + interval '1 hour'
+      )`;
     await sql`insert into public.contact_submissions
       (name, email, message, enquiry_type, source)
       values (
@@ -122,6 +126,7 @@ test.describe.serial("admin portal", () => {
       await sql`delete from public.team_members where slug like 'e2e-member-%'`;
       await sql`delete from public.site_content where key like 'e2e_content_%'`;
       await sql`delete from public.contact_submissions where source = 'e2e'`;
+      await sql`delete from private.admin_invitations where email = ${invitedEmail}`;
     }
     for (const id of createdUsers) {
       await adminRequest(request, "DELETE", `/auth/v1/admin/users/${id}`, null);
