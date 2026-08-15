@@ -33,12 +33,13 @@ The `submit-contact` function requires:
 - Exact comma-separated origins in `ALLOWED_ORIGINS` (no wildcard)
 - Cloudflare Turnstile secret and expected hostnames
 - A random `RATE_LIMIT_SALT` of at least 32 characters
-- `CONTACT_EMAIL_PROVIDER=emailjs` with EmailJS service, contact-template and
-  public-key settings, or `CONTACT_EMAIL_PROVIDER=resend` with a Resend API key
-  and verified sender
+  - `CONTACT_EMAIL_PROVIDER=emailjs` with EmailJS service, contact-template,
+    auto-reply-template, and public-key settings, or
+    `CONTACT_EMAIL_PROVIDER=resend` with a Resend API key and verified sender
 - A destination mailbox in `CONTACT_TO_EMAIL`
 
-With EmailJS, keep the template's recipient fixed to the Grain Muse mailbox.
+With EmailJS, address the contact template to the Grain Muse mailbox and configure
+the auto-reply template's recipient as `{{to_email}}`.
 Set `EMAILJS_PRIVATE_KEY` when private-key authorization is enabled in the
 EmailJS account. These are Edge Function secrets, not browser `VITE_` values.
 

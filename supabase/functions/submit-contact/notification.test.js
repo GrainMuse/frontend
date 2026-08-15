@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  createConfirmationRequest,
   createNotificationRequest,
+  sendContactConfirmation,
   sendContactNotification,
 } from "./notification.js";
 
@@ -52,6 +54,42 @@ test("supports EmailJS accounts that do not require private-key authorization", 
   });
 
   assert.equal("accessToken" in JSON.parse(request.init.body), false);
+});
+
+test("builds an EmailJS auto-reply addressed to the visitor", () => {
+  const request = createConfirmationRequest({
+    value,
+    config: {
+      serviceId: "service_grainmuse",
+      autoreplyTemplateId: "template_autoreply",
+      publicKey: "public-key",
+      privateKey: "private-key",
+      toEmail: "trade@grainmuse.net",
+    },
+  });
+  const body = JSON.parse(request.init.body);
+
+  assert.equal(body.template_id, "template_autoreply");
+  assert.equal(body.template_params.to_email, value.email);
+  assert.equal(body.template_params.to_name, value.name);
+  assert.equal(body.template_params.reply_to, "trade@grainmuse.net");
+  assert.doesNotMatch(request.init.body, /turnstile/i);
+});
+
+test("reports successful EmailJS auto-reply delivery", async () => {
+  const delivered = await sendContactConfirmation({
+    value,
+    config: {
+      serviceId: "service_grainmuse",
+      autoreplyTemplateId: "template_autoreply",
+      publicKey: "public-key",
+      toEmail: "trade@grainmuse.net",
+    },
+    fetchImpl: async () => new Response(null, { status: 200 }),
+    signal: undefined,
+  });
+
+  assert.equal(delivered, true);
 });
 
 test("reports provider delivery failures without losing the stored enquiry", async () => {

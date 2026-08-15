@@ -65,9 +65,9 @@ Set these in the staging project's Edge Function Secrets settings:
 - `RATE_LIMIT_SALT` - at least 32 cryptographically random characters
 - `CONTACT_EMAIL_PROVIDER` - `emailjs` or `resend`
 - `CONTACT_TO_EMAIL`
-- For EmailJS: `EMAILJS_SERVICE_ID`, `EMAILJS_TEMPLATE_ID`, and
-  `EMAILJS_PUBLIC_KEY`; also set `EMAILJS_PRIVATE_KEY` when private-key
-  authorization is enabled in EmailJS
+- For EmailJS: `EMAILJS_SERVICE_ID`, `EMAILJS_TEMPLATE_ID`,
+  `EMAILJS_AUTOREPLY_TEMPLATE_ID`, and `EMAILJS_PUBLIC_KEY`; also set
+  `EMAILJS_PRIVATE_KEY` when private-key authorization is enabled in EmailJS
 - For Resend: `RESEND_API_KEY` and `CONTACT_FROM_EMAIL` using a verified domain
 
 Do not put these values in Vite variables, Git, shell history, or this document.
