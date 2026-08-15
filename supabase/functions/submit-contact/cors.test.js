@@ -16,7 +16,8 @@ test("returns a successful browser preflight with the required CORS headers", as
   assert.equal(response.headers.get("vary"), "Origin");
   assert.equal(
     response.headers.get("x-grainmuse-function-version"),
-    "2026-08-15.1",
+    "2026-08-15.2",
   );
-  assert.deepEqual(await response.json(), { ok: true });
+  assert.equal(response.headers.get("content-type"), "text/plain; charset=utf-8");
+  assert.equal(await response.text(), "ok");
 });
