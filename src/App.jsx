@@ -11,9 +11,14 @@ import About from "./pages/About";
 import Team from "./pages/Team";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import Admin from "./pages/Admin";
 
 export default function App() {
   const location = useLocation();
+
+  if (location.pathname.startsWith("/admin")) {
+    return <Admin />;
+  }
 
   return (
     <>

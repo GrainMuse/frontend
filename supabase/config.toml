@@ -5,6 +5,13 @@ enabled = true
 site_url = "http://localhost:5173"
 additional_redirect_urls = ["http://127.0.0.1:5173"]
 
+[auth.mfa]
+max_enrolled_factors = 10
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
 [functions.submit-contact]
 # This is a public form endpoint. It authenticates requests with strict origin
 # checks, Turnstile, validation, and server-side rate limits instead of a user JWT.

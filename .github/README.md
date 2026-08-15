@@ -13,6 +13,7 @@ schema.
 Configure branch protection for `main` and require these checks:
 
 - `Frontend`
+- `Admin portal workflow`
 - `Supabase database`
 
 ## Supabase deployment

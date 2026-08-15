@@ -10,6 +10,7 @@
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "test:contact": "node --test supabase/functions/submit-contact/validation.test.js",
     "test:deployment": "node --test scripts/supabase-staging-preflight.test.mjs",
+    "test:admin:e2e": "playwright test tests/admin-workflow.spec.js",
     "supabase:start": "supabase start --exclude logflare,vector",
     "supabase:start:full": "supabase start",
     "supabase:stop": "supabase stop",
@@ -33,6 +34,7 @@
     "sitemap": "^8.0.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
@@ -40,6 +42,8 @@
     "eslint-plugin-react": "^7.34.3",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
+    "otpauth": "^9.4.1",
+    "postgres": "^3.4.7",
     "supabase": "2.114.0",
     "vite": "^5.3.4"
   }
