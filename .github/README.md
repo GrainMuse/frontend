@@ -17,20 +17,31 @@ Configure branch protection for `main` and require these checks:
 
 ## Supabase deployment
 
-`deploy-supabase.yml` is manual-only and only accepts `main`. Create two GitHub
-environments named `staging` and `production`. Add these environment secrets to
-each one using that environment's own values:
+`deploy-supabase-staging.yml` provides continuous delivery to staging. After the
+`CI` workflow succeeds for a direct push to `main`, it checks out the exact
+tested commit, applies pending migrations to the `staging` Supabase project,
+and deploys the `submit-contact` Edge Function. Failed CI runs, pull request
+runs, forks, and non-`main` branches cannot trigger a staging deployment.
+
+`deploy-supabase.yml` remains the protected release path for production. It is
+manual-only, accepts only `main`, and requires an explicit production
+confirmation in addition to any GitHub Environment approval.
+
+Create two GitHub environments named `staging` and `production`. Add these
+environment secrets to each one using that environment's own Supabase project
+values:
 
 - `SUPABASE_ACCESS_TOKEN`
 - `SUPABASE_DB_PASSWORD`
 - `SUPABASE_PROJECT_ID`
 
-Require reviewers for the `production` environment. Keep staging and production
-as separate Supabase projects. Edge Function runtime secrets such as Turnstile,
-Resend, allowed origins, and the rate-limit salt must be configured directly in
-each Supabase project before deploying the function; they are not stored in
-GitHub or passed through this workflow.
+Do not configure required reviewers on `staging`, because that would prevent
+automatic delivery. Require reviewers for `production`. Keep staging and
+production as separate Supabase projects. Edge Function runtime secrets such as
+Turnstile, Resend, allowed origins, and the rate-limit salt must be configured
+directly in each Supabase project before deploying the function; they are not
+stored in GitHub or passed through these workflows.
 
-The workflow previews pending migrations before applying them and never uses
+Both workflows preview pending migrations before applying them and never use
 `--include-seed`, `db reset`, or a service-role key. Production also requires
 typing `DEPLOY_PRODUCTION` when dispatching the workflow.
