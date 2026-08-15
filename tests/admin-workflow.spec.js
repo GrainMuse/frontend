@@ -3,9 +3,20 @@ import { expect, test } from "@playwright/test";
 import * as OTPAuth from "otpauth";
 import postgres from "postgres";
 
-const apiUrl = process.env.API_URL ?? "http://127.0.0.1:54321";
-const adminKey = process.env.SECRET_KEY ?? process.env.SERVICE_ROLE_KEY;
-const databaseUrl = process.env.DB_URL;
+function cleanEnv(value) {
+  if (!value) return value;
+  const trimmed = value.trim();
+  const quoted =
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"));
+  return quoted ? trimmed.slice(1, -1) : trimmed;
+}
+
+const apiUrl = cleanEnv(process.env.API_URL) ?? "http://127.0.0.1:54321";
+const adminKey = cleanEnv(
+  process.env.SECRET_KEY ?? process.env.SERVICE_ROLE_KEY,
+);
+const databaseUrl = cleanEnv(process.env.DB_URL);
 const runId = Date.now().toString(36);
 const adminEmail = `admin-e2e-${runId}@grainmuse.local`;
 const editorEmail = `editor-e2e-${runId}@grainmuse.local`;

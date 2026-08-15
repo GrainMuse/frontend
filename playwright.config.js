@@ -1,8 +1,19 @@
 /* eslint-env node */
 import { defineConfig } from "@playwright/test";
 
-const apiUrl = process.env.API_URL ?? "http://127.0.0.1:54321";
-const browserKey = process.env.PUBLISHABLE_KEY ?? process.env.ANON_KEY;
+function cleanEnv(value) {
+  if (!value) return value;
+  const trimmed = value.trim();
+  const quoted =
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"));
+  return quoted ? trimmed.slice(1, -1) : trimmed;
+}
+
+const apiUrl = cleanEnv(process.env.API_URL) ?? "http://127.0.0.1:54321";
+const browserKey = cleanEnv(
+  process.env.PUBLISHABLE_KEY ?? process.env.ANON_KEY,
+);
 
 export default defineConfig({
   testDir: "./tests",
