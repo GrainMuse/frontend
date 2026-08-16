@@ -295,6 +295,44 @@ export async function submitAcademyApplication(programId, input) {
   return data;
 }
 
+export async function fetchMyAcademyApplications() {
+  const client = requireSupabase();
+  const { data: authData } = await client.auth.getUser();
+  if (!authData.user) return [];
+  const { data, error } = await client
+    .from("academy_applications")
+    .select(`${APPLICATION_FIELDS}, academy_programs(id, slug, title, subtitle, hero_image_path, start_date, status)`)
+    .eq("user_id", authData.user.id)
+    .order("created_at", { ascending: false });
+  throwQueryError(error, "applicant application read");
+  return (data ?? []).map((application) => ({
+    ...application,
+    program: application.academy_programs
+      ? mapProgram({
+        ...application.academy_programs,
+        objectives: [], outcomes: [], curriculum: [], eligibility: [],
+        display_order: 0,
+      })
+      : null,
+  }));
+}
+
+export async function fetchMyAcademyApplication(programId) {
+  const applications = await fetchMyAcademyApplications();
+  return applications.find((application) => application.program_id === programId) ?? null;
+}
+
+export async function withdrawAcademyApplication(id) {
+  const { data, error } = await requireSupabase()
+    .from("academy_applications")
+    .update({ status: "withdrawn" })
+    .eq("id", id)
+    .select("id, status, updated_at")
+    .single();
+  throwQueryError(error, "academy application withdrawal");
+  return data;
+}
+
 export async function updateAcademyApplicationStatus(id, status) {
   const { data, error } = await requireSupabase()
     .from("academy_applications")

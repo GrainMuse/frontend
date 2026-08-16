@@ -12,10 +12,14 @@ import {
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import SEOHead from "../components/common/SEOHead";
+import ApplicantAuthForm from "../components/academy/ApplicantAuthForm";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 import { useAcademyProgram } from "../hooks/useAcademyData";
 import { supabase } from "../lib/supabase";
-import { submitAcademyApplication } from "../services/academyService";
+import {
+  fetchMyAcademyApplication,
+  submitAcademyApplication,
+} from "../services/academyService";
 import { resolveMediaUrl } from "../services/mediaService";
 import styles from "./Academy.module.css";
 
@@ -213,8 +217,7 @@ function ResourcePeople({ people }) {
 
 function ApplicationPanel({ program }) {
   const [session, setSession] = useState(undefined);
-  const [mode, setMode] = useState("signin");
-  const [auth, setAuth] = useState({ email: "", password: "", fullName: "" });
+  const [existing, setExisting] = useState(undefined);
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
@@ -225,49 +228,36 @@ function ApplicationPanel({ program }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const deadlinePassed = program.applicationDeadline
+    ? new Date(program.applicationDeadline).getTime() < Date.now()
+    : false;
+  const internalOpen = program.internalApplicationsEnabled && !deadlinePassed;
 
   useEffect(() => {
     if (!supabase) {
       setSession(null);
       return undefined;
     }
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    async function sync(nextSession) {
+      setSession(nextSession);
+      if (!nextSession) {
+        setExisting(null);
+        return;
+      }
+      try {
+        setExisting(await fetchMyAcademyApplication(program.id));
+      } catch {
+        setError("We could not check your existing applications.");
+      }
+    }
+    supabase.auth.getSession().then(({ data }) => sync(data.session));
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, next) => setSession(next));
+    } = supabase.auth.onAuthStateChange((_event, next) =>
+      setTimeout(() => sync(next), 0),
+    );
     return () => subscription.unsubscribe();
-  }, []);
-
-  async function authenticate(event) {
-    event.preventDefault();
-    setBusy(true);
-    setError("");
-    setMessage("");
-    try {
-      if (mode === "signup") {
-        const { data, error: authError } = await supabase.auth.signUp({
-          email: auth.email,
-          password: auth.password,
-          options: { data: { full_name: auth.fullName } },
-        });
-        if (authError) throw authError;
-        if (!data.session)
-          setMessage(
-            "Check your email to confirm your account, then return to apply.",
-          );
-      } else {
-        const { error: authError } = await supabase.auth.signInWithPassword({
-          email: auth.email,
-          password: auth.password,
-        });
-        if (authError) throw authError;
-      }
-    } catch (authError) {
-      setError(authError.message);
-    } finally {
-      setBusy(false);
-    }
-  }
+  }, [program.id]);
 
   async function apply(event) {
     event.preventDefault();
@@ -276,6 +266,7 @@ function ApplicationPanel({ program }) {
     try {
       await submitAcademyApplication(program.id, form);
       setMessage("Your application has been submitted successfully.");
+      setExisting(await fetchMyAcademyApplication(program.id));
     } catch (submitError) {
       setError(submitError.message);
     } finally {
@@ -305,9 +296,23 @@ function ApplicationPanel({ program }) {
           )}
         </div>
         <div className={styles.applicationCard}>
-          {session === undefined ? (
+          {session === undefined || (session && existing === undefined) ? (
             <p>Checking your account…</p>
-          ) : session && program.internalApplicationsEnabled ? (
+          ) : session && existing ? (
+            <div className={styles.existingApplication}>
+              <span className={styles.statusBadge}>{existing.status}</span>
+              <h3>Application already submitted</h3>
+              {message && (
+                <p className={styles.formSuccess} role="status">{message}</p>
+              )}
+              <p>
+                You applied on {new Date(existing.created_at).toLocaleDateString()}.
+              </p>
+              <Link className="btn btn-primary" to="/pathfinder-academy/account">
+                View my applications
+              </Link>
+            </div>
+          ) : session && internalOpen ? (
             <form onSubmit={apply}>
               <h3>Internal application</h3>
               <p>
@@ -383,73 +388,20 @@ function ApplicationPanel({ program }) {
                 {busy ? "Submitting…" : "Submit application"}
               </button>
             </form>
-          ) : supabase ? (
-            <form onSubmit={authenticate}>
+          ) : session ? (
+            <div className={styles.existingApplication}>
               <h3>
-                {mode === "signup"
-                  ? "Create an applicant account"
-                  : "Applicant sign in"}
+                {deadlinePassed
+                  ? "Internal applications have closed"
+                  : "Internal applications are not enabled"}
               </h3>
-              {mode === "signup" && (
-                <label>
-                  Full name
-                  <input
-                    required
-                    value={auth.fullName}
-                    onChange={(e) =>
-                      setAuth({ ...auth, fullName: e.target.value })
-                    }
-                  />
-                </label>
-              )}
-              <label>
-                Email
-                <input
-                  type="email"
-                  required
-                  value={auth.email}
-                  onChange={(e) => setAuth({ ...auth, email: e.target.value })}
-                />
-              </label>
-              <label>
-                Password
-                <input
-                  type="password"
-                  required
-                  minLength="8"
-                  value={auth.password}
-                  onChange={(e) =>
-                    setAuth({ ...auth, password: e.target.value })
-                  }
-                />
-              </label>
-              {error && (
-                <p className={styles.formError} role="alert">
-                  {error}
-                </p>
-              )}
-              {message && <p className={styles.formSuccess}>{message}</p>}
-              <button className="btn btn-primary" disabled={busy}>
-                {busy
-                  ? "Please wait…"
-                  : mode === "signup"
-                    ? "Create account"
-                    : "Sign in"}
-              </button>
-              <button
-                type="button"
-                className={styles.authSwitch}
-                onClick={() => {
-                  setMode(mode === "signup" ? "signin" : "signup");
-                  setError("");
-                  setMessage("");
-                }}
-              >
-                {mode === "signup"
-                  ? "Already registered? Sign in"
-                  : "New applicant? Create an account"}
-              </button>
-            </form>
+              <p>Please use the external form if it is still available.</p>
+              <Link to="/pathfinder-academy/account">View my applications</Link>
+            </div>
+          ) : supabase && internalOpen ? (
+            <ApplicantAuthForm
+              returnPath={`/pathfinder-academy/programs/${program.slug}#apply`}
+            />
           ) : (
             <p>
               Internal applications are unavailable. Please use the external

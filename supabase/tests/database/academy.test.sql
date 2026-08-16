@@ -11,7 +11,7 @@ select ok((select relrowsecurity from pg_catalog.pg_class where oid = 'public.ac
 select is((select count(*) from pg_catalog.pg_policies where schemaname = 'public' and tablename = 'academy_programs'), 2::bigint, 'academy programs have public and staff policies');
 select is((select count(*) from pg_catalog.pg_policies where schemaname = 'public' and tablename = 'academy_resource_persons'), 2::bigint, 'resource persons have public and staff policies');
 select is((select count(*) from pg_catalog.pg_policies where schemaname = 'public' and tablename = 'academy_program_resource_persons'), 2::bigint, 'assignments have public and staff policies');
-select is((select count(*) from pg_catalog.pg_policies where schemaname = 'public' and tablename = 'academy_applications'), 4::bigint, 'applications have applicant and admin policies');
+select is((select count(*) from pg_catalog.pg_policies where schemaname = 'public' and tablename = 'academy_applications'), 5::bigint, 'applications have applicant lifecycle and admin policies');
 
 select ok(has_table_privilege('anon', 'public.academy_programs', 'select'), 'anonymous visitors can query programs through RLS');
 select ok(has_table_privilege('anon', 'public.academy_resource_persons', 'select'), 'anonymous visitors can query resource persons through RLS');

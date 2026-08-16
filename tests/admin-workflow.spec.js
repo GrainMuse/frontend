@@ -270,6 +270,12 @@ test.describe.serial("admin portal", () => {
     await page.getByLabel("Why do you want to join?").fill("I want to verify the complete secure internal application workflow.");
     await page.getByRole("button", { name: "Submit application" }).click();
     await expect(page.getByText("Your application has been submitted successfully.")).toBeVisible();
+    await page.getByRole("link", { name: "View my applications" }).click();
+    const myApplication = page.locator("article").filter({ hasText: `E2E Academy ${runId}` });
+    await expect(myApplication).toBeVisible();
+    page.once("dialog", (dialog) => dialog.accept());
+    await myApplication.getByRole("button", { name: "Withdraw application" }).click();
+    await expect(myApplication.getByText("withdrawn", { exact: true })).toBeVisible();
   });
 
   test("triages enquiries and requires TOTP on the next login", async ({ page }) => {

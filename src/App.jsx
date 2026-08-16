@@ -15,6 +15,7 @@ import Admin from "./pages/Admin";
 import Academy from "./pages/Academy";
 import AcademyProgram from "./pages/AcademyProgram";
 import AcademyResourcePerson from "./pages/AcademyResourcePerson";
+import AcademyAccount from "./pages/AcademyAccount";
 
 export default function App() {
   const location = useLocation();
@@ -74,6 +75,14 @@ export default function App() {
               element={
                 <PageTransition variant="slideUp">
                   <AcademyProgram />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/pathfinder-academy/account"
+              element={
+                <PageTransition variant="slideUp">
+                  <AcademyAccount />
                 </PageTransition>
               }
             />

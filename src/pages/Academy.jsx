@@ -51,11 +51,14 @@ export default function Academy() {
               <p className="section-eyebrow">Current opportunities</p>
               <h2 className="display-md">Academy programs</h2>
             </div>
-            {programs?.length > 0 && (
-              <span>
-                {programs.length} program{programs.length === 1 ? "" : "s"}
-              </span>
-            )}
+            <div className={styles.sectionActions}>
+              <Link to="/pathfinder-academy/account">My applications</Link>
+              {programs?.length > 0 && (
+                <span>
+                  {programs.length} program{programs.length === 1 ? "" : "s"}
+                </span>
+              )}
+            </div>
           </header>
 
           {loading && (
