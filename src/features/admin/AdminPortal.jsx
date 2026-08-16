@@ -43,6 +43,10 @@ export function AdminPortal() {
             enquiries: data.enquiries.filter(
               (enquiry) => enquiry.status === "new",
             ).length,
+            academyPrograms: data.academy.programs.length,
+            pendingApplications: data.academy.applications.filter((application) =>
+              ["submitted", "reviewing"].includes(application.status),
+            ).length,
           }
         : null,
     [data],
@@ -137,6 +141,7 @@ export function AdminPortal() {
           <AdminOverview
             data={data}
             counts={counts}
+            role={membership.role}
             onViewProducts={() => selectSection("products")}
           />
         )}

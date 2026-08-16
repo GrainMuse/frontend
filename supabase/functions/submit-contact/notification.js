@@ -1,5 +1,4 @@
 const EMAILJS_ENDPOINT = "https://api.emailjs.com/api/v1.0/email/send";
-const RESEND_ENDPOINT = "https://api.resend.com/emails";
 
 function emailJsRequest(config, value) {
   return {
@@ -13,6 +12,14 @@ function emailJsRequest(config, value) {
         user_id: config.publicKey,
         ...(config.privateKey ? { accessToken: config.privateKey } : {}),
         template_params: {
+          is_contact_enquiry: true,
+          is_contact_confirmation: true,
+          is_academy: false,
+          subject: `New contact enquiry · ${value.type}`,
+          preheader: `${value.name} submitted a ${value.type} enquiry.`,
+          header_title: "New Contact Enquiry",
+          header_subtitle: "Grain Muse Website",
+          sender_name: "Grain Muse Website",
           from_name: value.name,
           email: value.email,
           reply_to: value.email,
@@ -20,36 +27,11 @@ function emailJsRequest(config, value) {
           enquiry_type: value.type,
           message: value.message,
           submitted_at: new Date().toISOString(),
+          site_url: "https://grainmuse.net",
+          action_label: "Visit Grain Muse",
+          action_url: "https://grainmuse.net",
           to_email: config.toEmail,
         },
-      }),
-    },
-  };
-}
-
-function resendRequest(config, submissionId, value) {
-  return {
-    url: RESEND_ENDPOINT,
-    init: {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${config.apiKey}`,
-        "Content-Type": "application/json",
-        "Idempotency-Key": `contact-${submissionId}-notification`,
-      },
-      body: JSON.stringify({
-        from: config.fromEmail,
-        to: [config.toEmail],
-        reply_to: value.email,
-        subject: `New Grain Muse enquiry: ${value.type}`,
-        text: [
-          `Name: ${value.name}`,
-          `Email: ${value.email}`,
-          `Phone: ${value.phone ?? "Not provided"}`,
-          `Type: ${value.type}`,
-          "",
-          value.message,
-        ].join("\n"),
       }),
     },
   };
@@ -58,13 +40,9 @@ function resendRequest(config, submissionId, value) {
 export function createNotificationRequest({
   provider,
   config,
-  submissionId,
   value,
 }) {
   if (provider === "emailjs") return emailJsRequest(config, value);
-  if (provider === "resend") {
-    return resendRequest(config, submissionId, value);
-  }
   throw new Error(`Unsupported contact email provider: ${provider}`);
 }
 

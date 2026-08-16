@@ -378,7 +378,7 @@
 
 .stats {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 18px
 }
 
@@ -566,6 +566,22 @@
     color: #666
 }
 
+.pending,
+.processing {
+    background: #f1ead9;
+    color: #8b682b
+}
+
+.sent {
+    background: #e2eee2;
+    color: #3e6a45
+}
+
+.failed {
+    background: #f5dfdc;
+    color: #9f382f
+}
+
 .manager {
     margin-top: 28px;
     overflow: hidden
@@ -725,6 +741,158 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
     background: #f8f7f2
+}
+
+.applicationTools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e3e0d8;
+    background: #f8f7f2
+}
+
+.notificationTable>div {
+    display: grid;
+    grid-template-columns: 1.3fr 1.4fr .6fr .45fr 1fr;
+    gap: 16px;
+    align-items: center;
+    padding: 14px 24px;
+    border-top: 1px solid #efede6;
+    font-size: 12px
+}
+
+.notificationTable .notificationHead {
+    border-top: 0;
+    background: #faf9f5;
+    color: #8b938c;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .12em
+}
+
+.notificationTable strong {
+    display: grid;
+    text-transform: capitalize
+}
+
+.notificationTable small {
+    max-width: 260px;
+    margin-top: 4px;
+    overflow: hidden;
+    color: #8a918b;
+    font-weight: 400;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-transform: none
+}
+
+.notificationTable i {
+    width: max-content;
+    padding: 5px 8px;
+    border-radius: 12px;
+    font-style: normal;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .08em
+}
+
+.notificationTable time {
+    color: #717a73
+}
+
+.applicationTools select {
+    min-width: 170px;
+    padding: 10px;
+    border: 1px solid #d9d6ca;
+    border-radius: 7px;
+    background: #fff;
+    color: #344036
+}
+
+.applicationTools>span {
+    margin-left: auto;
+    color: #798078;
+    font-size: 11px
+}
+
+.reviewButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #405b47;
+    font-weight: 750
+}
+
+.reviewSummary {
+    display: grid;
+    gap: 6px;
+    padding: 18px;
+    border-radius: 8px;
+    background: #ece9df
+}
+
+.reviewSummary>span {
+    font-weight: 800;
+    color: #304735
+}
+
+.reviewSummary a {
+    color: #52665a;
+    font-size: 13px
+}
+
+.reviewSummary time {
+    margin-top: 5px;
+    color: #7a827b;
+    font-size: 11px
+}
+
+.reviewField {
+    display: grid;
+    gap: 7px;
+    padding: 15px;
+    border: 1px solid #dedbd0;
+    border-radius: 8px;
+    background: #fff
+}
+
+.reviewField strong {
+    color: #4b564d;
+    font-size: 12px
+}
+
+.reviewField p {
+    margin: 0;
+    color: #59635c;
+    line-height: 1.65;
+    white-space: pre-wrap
+}
+
+.reviewHistory {
+    display: grid;
+    gap: 8px;
+    padding-top: 8px
+}
+
+.reviewHistory h3 {
+    font: 500 19px Georgia, serif
+}
+
+.reviewHistory>div {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 10px 12px;
+    border-radius: 7px;
+    background: #ece9df;
+    font-size: 12px
+}
+
+.reviewHistory time,
+.reviewHistory p {
+    color: #7a827b;
+    font-size: 11px
 }
 
 .enquiryGrid article {
@@ -955,6 +1123,19 @@
         grid-template-columns: 1fr
     }
 
+    .notificationTable .notificationHead {
+        display: none
+    }
+
+    .notificationTable>div {
+        grid-template-columns: 1.4fr .7fr 1fr
+    }
+
+    .notificationTable>div>span:first-of-type,
+    .notificationTable>div>span:nth-of-type(3) {
+        display: none
+    }
+
     .staffPanel {
         grid-template-columns: 1fr;
         gap: 25px
@@ -974,6 +1155,15 @@
         align-items: stretch;
         flex-direction: column;
         gap: 12px
+    }
+
+    .applicationTools {
+        align-items: stretch;
+        flex-direction: column
+    }
+
+    .applicationTools>span {
+        margin-left: 0
     }
 
     .search {

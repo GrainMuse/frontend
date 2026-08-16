@@ -1,9 +1,11 @@
 import {
   Boxes,
+  ClipboardCheck,
   ChevronRight,
   CircleUserRound,
   Inbox,
   Leaf,
+  GraduationCap,
   LogOut,
   Menu,
   ShieldCheck,
@@ -94,7 +96,7 @@ export function AdminHeader({
   );
 }
 
-export function AdminOverview({ data, counts, onViewProducts }) {
+export function AdminOverview({ data, counts, role, onViewProducts }) {
   return (
     <div className={styles.dashboard}>
       <section className={styles.welcome}>
@@ -115,6 +117,10 @@ export function AdminOverview({ data, counts, onViewProducts }) {
           ["Published", counts.published, ShieldCheck],
           ["Team members", counts.team, Users],
           ["New enquiries", counts.enquiries, Inbox],
+          ["Academy programs", counts.academyPrograms, GraduationCap],
+          ...(role === "admin"
+            ? [["Applications to review", counts.pendingApplications, ClipboardCheck]]
+            : []),
         ].map(([label, value, Icon]) => (
           <article key={label}>
             <Icon />

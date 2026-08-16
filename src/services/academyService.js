@@ -1,4 +1,4 @@
-import { requireSupabase } from "../lib/supabase";
+import { requireSupabase, supabase } from "../lib/supabase";
 
 const PROGRAM_FIELDS = [
   "id", "slug", "title", "subtitle", "summary", "description",
@@ -23,6 +23,9 @@ const APPLICATION_FIELDS = [
   "organization", "background", "motivation", "status", "created_at",
   "updated_at",
 ].join(", ");
+const REVIEW_FIELDS = "application_id, notes, reviewed_by, reviewed_at, updated_at";
+const HISTORY_FIELDS = "id, application_id, from_status, to_status, changed_by, created_at";
+const NOTIFICATION_FIELDS = "id, application_id, event_type, recipient_email, status, attempts, next_attempt_at, provider_message_id, last_error, sent_at, created_at";
 
 function compact(record) {
   return Object.fromEntries(
@@ -32,6 +35,13 @@ function compact(record) {
 
 function throwQueryError(error, operation) {
   if (error) throw new Error(`Supabase ${operation} failed: ${error.message}`);
+}
+
+function requestAcademyNotificationProcessing() {
+  if (!supabase) return;
+  supabase.functions
+    .invoke("process-academy-notifications", { body: {} })
+    .catch(() => undefined);
 }
 
 function mapProgram(row) {
@@ -204,22 +214,30 @@ export async function fetchPublishedResourcePerson(slug) {
 
 export async function fetchAdminAcademy() {
   const client = requireSupabase();
-  const [programs, people, assignments, applications] = await Promise.all([
+  const [programs, people, assignments, applications, reviews, history, notifications] = await Promise.all([
     client.from("academy_programs").select(PROGRAM_FIELDS).order("display_order"),
     client.from("academy_resource_persons").select(PERSON_FIELDS).order("display_order"),
     client.from("academy_program_resource_persons").select(ASSIGNMENT_FIELDS).order("display_order"),
     client.from("academy_applications").select(APPLICATION_FIELDS).order("created_at", { ascending: false }),
+    client.from("academy_application_reviews").select(REVIEW_FIELDS),
+    client.from("academy_application_status_history").select(HISTORY_FIELDS).order("created_at", { ascending: false }),
+    client.from("academy_notification_outbox").select(NOTIFICATION_FIELDS).order("created_at", { ascending: false }).limit(200),
   ]);
   [programs, people, assignments].forEach((result) =>
     throwQueryError(result.error, "academy admin read"),
   );
-  if (applications.error && applications.error.code !== "42501")
-    throwQueryError(applications.error, "academy application read");
+  [applications, reviews, history, notifications].forEach((result) => {
+    if (result.error && result.error.code !== "42501")
+      throwQueryError(result.error, "academy private application read");
+  });
   return {
     programs: (programs.data ?? []).map(mapProgram),
     resourcePersons: (people.data ?? []).map(mapPerson),
     assignments: assignments.data ?? [],
     applications: applications.data ?? [],
+    reviews: reviews.data ?? [],
+    applicationHistory: history.data ?? [],
+    notifications: notifications.data ?? [],
   };
 }
 
@@ -292,6 +310,7 @@ export async function submitAcademyApplication(programId, input) {
     .select(APPLICATION_FIELDS)
     .single();
   throwQueryError(error, "academy application submission");
+  requestAcademyNotificationProcessing();
   return data;
 }
 
@@ -330,6 +349,7 @@ export async function withdrawAcademyApplication(id) {
     .select("id, status, updated_at")
     .single();
   throwQueryError(error, "academy application withdrawal");
+  requestAcademyNotificationProcessing();
   return data;
 }
 
@@ -341,5 +361,20 @@ export async function updateAcademyApplicationStatus(id, status) {
     .select("id, status, updated_at")
     .single();
   throwQueryError(error, "academy application status update");
+  requestAcademyNotificationProcessing();
+  return data;
+}
+
+export async function reviewAcademyApplication(id, status, notes) {
+  const { data, error } = await requireSupabase().rpc(
+    "review_academy_application",
+    {
+      application_id: id,
+      next_status: status,
+      review_notes: notes ?? "",
+    },
+  );
+  throwQueryError(error, "academy application review");
+  requestAcademyNotificationProcessing();
   return data;
 }

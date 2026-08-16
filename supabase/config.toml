@@ -19,3 +19,8 @@ verify_enabled = true
 # This is a public form endpoint. It authenticates requests with strict origin
 # checks, Turnstile, validation, and server-side rate limits instead of a user JWT.
 verify_jwt = false
+
+[functions.process-academy-notifications]
+# Supports either an authenticated browser invocation after an application
+# action or a processor secret supplied by a scheduled retry invocation.
+verify_jwt = false

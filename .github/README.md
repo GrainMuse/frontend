@@ -39,7 +39,7 @@ values:
 Do not configure required reviewers on `staging`, because that would prevent
 automatic delivery. Require reviewers for `production`. Keep staging and
 production as separate Supabase projects. Edge Function runtime secrets such as
-Turnstile, Resend, allowed origins, and the rate-limit salt must be configured
+Turnstile, EmailJS, allowed origins, and the rate-limit salt must be configured
 directly in each Supabase project before deploying the function; they are not
 stored in GitHub or passed through these workflows.
 

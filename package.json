@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "test:contact": "node --test supabase/functions/submit-contact/*.test.js",
+    "test:academy:notifications": "node --test supabase/functions/process-academy-notifications/*.test.js",
     "test:deployment": "node --test scripts/supabase-staging-preflight.test.mjs",
     "test:admin:e2e": "playwright test tests/admin-workflow.spec.js",
     "test:admin:api": "node --test api/admin/invitations.test.js",

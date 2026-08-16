@@ -36,6 +36,9 @@ test("builds an authenticated EmailJS notification request", () => {
   assert.equal(body.template_params.email, value.email);
   assert.equal(body.template_params.reply_to, value.email);
   assert.equal(body.template_params.to_email, "trade@grainmuse.net");
+  assert.equal(body.template_params.is_contact_enquiry, true);
+  assert.equal(body.template_params.is_contact_confirmation, true);
+  assert.equal(body.template_params.is_academy, false);
   assert.doesNotMatch(request.init.body, /turnstile/i);
 });
 
@@ -73,9 +76,9 @@ test("reports provider delivery failures without losing the stored enquiry", asy
   assert.deepEqual(delivered, { ok: false, status: 403 });
 });
 
-test("rejects an unsupported notification provider", () => {
+test("rejects Resend because EmailJS is the only notification provider", () => {
   assert.throws(
-    () => createNotificationRequest({ provider: "smtp", config: {}, value }),
+    () => createNotificationRequest({ provider: "resend", config: {}, value }),
     /Unsupported contact email provider/,
   );
 });
