@@ -51,6 +51,7 @@ function ProductImage({ path, fallbackSlug, alt }) {
     <ProgressiveImage
       src={imgUrl}
       fallbackSrc={getProductImage(fallbackSlug)}
+      eager
       alt={altText}
       style={{
         width: "100%",
