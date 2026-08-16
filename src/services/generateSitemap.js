@@ -25,6 +25,11 @@ const urls = [
         priority: 0.8
     },
     {
+        url: 'https://grainmuse.net/pathfinder-academy',
+        changefreq: 'weekly',
+        priority: 0.9
+    },
+    {
         url: 'https://grainmuse.net/contact',
         changefreq: 'monthly',
         priority: 0.9

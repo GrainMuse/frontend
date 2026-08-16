@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 import { fetchAdminContent, fetchAdminMembership } from "../../services/contentService";
+import { fetchAdminAcademy } from "../../services/academyService";
 
 export function useAdminPortal() {
   const [session, setSession] = useState(undefined);
@@ -28,7 +29,11 @@ export function useAdminPortal() {
       return;
     }
     setMembership(member);
-    setData(await fetchAdminContent());
+    const [content, academy] = await Promise.all([
+      fetchAdminContent(),
+      fetchAdminAcademy(),
+    ]);
+    setData({ ...content, academy });
   }, []);
 
   useEffect(() => {
@@ -40,7 +45,11 @@ export function useAdminPortal() {
   }, [load]);
 
   const refreshData = useCallback(async () => {
-    setData(await fetchAdminContent());
+    const [content, academy] = await Promise.all([
+      fetchAdminContent(),
+      fetchAdminAcademy(),
+    ]);
+    setData({ ...content, academy });
   }, []);
 
   const signOut = useCallback(async () => {

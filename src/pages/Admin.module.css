@@ -413,6 +413,95 @@
     border-radius: 11px
 }
 
+.subnav {
+    display: flex;
+    gap: 8px;
+    margin-top: 28px
+}
+
+.subnav button {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    color: #657067;
+    background: #e9e6dc;
+    font-weight: 700
+}
+
+.subnav button span {
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: #ffffffaa;
+    font-size: 10px
+}
+
+.subnav .subnavActive {
+    color: #fff;
+    background: #304735
+}
+
+.wideDrawer {
+    width: min(720px, 100%)
+}
+
+.checkLabel {
+    grid-template-columns: auto 1fr !important;
+    align-items: center
+}
+
+.checkLabel input,
+.assignmentItem>label input {
+    width: auto !important
+}
+
+.assignmentField {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+    border: 1px solid #d9d6ca;
+    border-radius: 8px
+}
+
+.assignmentField legend {
+    padding: 0 6px;
+    font-size: 12px;
+    font-weight: 800;
+    color: #4b564d
+}
+
+.assignmentItem>label {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 10px;
+    padding: 9px;
+    border-radius: 6px;
+    background: #fff
+}
+
+.assignmentItem {
+    display: grid;
+    gap: 9px
+}
+
+.assignmentDetails {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 9px 12px 38px
+}
+
+.assignmentField label span {
+    display: grid
+}
+
+.assignmentField small {
+    color: #7a827b;
+    font-weight: 400
+}
+
 .recent>header,
 .manager>header {
     display: flex;
@@ -892,6 +981,10 @@
     }
 
     .formGrid {
+        grid-template-columns: 1fr
+    }
+
+    .assignmentDetails {
         grid-template-columns: 1fr
     }
 

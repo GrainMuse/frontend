@@ -12,6 +12,7 @@ import { RecordForm, RecordManager, StaffInvites } from "./AdminContent";
 import { AdminHeader, AdminOverview, AdminSidebar } from "./AdminLayout";
 import { sectionRecordType } from "./config";
 import { useAdminPortal } from "./useAdminPortal";
+import AdminAcademy from "./AdminAcademy";
 import styles from "../../pages/Admin.module.css";
 
 function recordsForSection(data, section) {
@@ -140,7 +141,15 @@ export function AdminPortal() {
           />
         )}
         {section === "staff" && <StaffInvites onSent={setNotice} />}
-        {!["overview", "staff"].includes(section) && (
+        {section === "academy" && (
+          <AdminAcademy
+            academy={data.academy}
+            role={membership.role}
+            onRefresh={refreshData}
+            onNotice={setNotice}
+          />
+        )}
+        {!["overview", "staff", "academy"].includes(section) && (
           <RecordManager
             section={section}
             records={recordsForSection(data, section)}
