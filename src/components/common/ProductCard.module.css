@@ -45,7 +45,7 @@
 /* Content padding */
 .category {
   font-family: var(--font-body);
-  font-size: 0.67rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -96,7 +96,7 @@
   position: absolute;
   top: 14px; left: 14px;
   font-family: var(--font-body);
-  font-size: 0.62rem;
+  font-size: var(--text-xs);
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;

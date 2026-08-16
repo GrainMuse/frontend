@@ -3,18 +3,28 @@ import {
   BookOpen,
   CalendarDays,
   MapPin,
+  UserRound,
   Users,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import SEOHead from "../components/common/SEOHead";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 import PageHero from "../components/ui/PageHero";
-import { useAcademyPrograms } from "../hooks/useAcademyData";
+import {
+  useAcademyPrograms,
+  useAcademyResourcePersons,
+} from "../hooks/useAcademyData";
 import { resolveMediaUrl } from "../services/mediaService";
 import styles from "./Academy.module.css";
 
 export default function Academy() {
   const { data: programs, loading, error, reload } = useAcademyPrograms();
+  const {
+    data: resourcePersons,
+    loading: peopleLoading,
+    error: peopleError,
+    reload: reloadPeople,
+  } = useAcademyResourcePersons();
 
   return (
     <>
@@ -100,6 +110,47 @@ export default function Academy() {
           </div>
         </div>
       </section>
+
+      <section className={`section-pad ${styles.peopleSection}`}>
+        <div className="container">
+          <header className={styles.sectionHeader}>
+            <div>
+              <p className="section-eyebrow">Guided by experience</p>
+              <h2 className="display-md">Academy resource persons</h2>
+            </div>
+            {resourcePersons?.length > 0 && (
+              <span className={styles.peopleCount}>
+                {resourcePersons.length} profile
+                {resourcePersons.length === 1 ? "" : "s"}
+              </span>
+            )}
+          </header>
+
+          {peopleLoading && (
+            <LoadingSkeleton count={3} label="Loading academy resource persons" />
+          )}
+          {peopleError && (
+            <div className={styles.message} role="alert">
+              <p>{peopleError}</p>
+              <button className="btn btn-outline" onClick={reloadPeople}>
+                Try again
+              </button>
+            </div>
+          )}
+          {!peopleLoading && !peopleError && resourcePersons?.length === 0 && (
+            <div className={styles.message}>
+              <UserRound />
+              <h3>Resource-person profiles are being prepared</h3>
+              <p>Meet the PATHFINDER Academy team here soon.</p>
+            </div>
+          )}
+          <div className={styles.peopleGrid}>
+            {resourcePersons?.map((person) => (
+              <ResourcePersonCard key={person.id} person={person} />
+            ))}
+          </div>
+        </div>
+      </section>
     </>
   );
 }
@@ -137,6 +188,46 @@ function ProgramCard({ program }) {
         >
           Explore program <ArrowRight />
         </Link>
+      </div>
+    </article>
+  );
+}
+
+function ResourcePersonCard({ person }) {
+  const imageUrl = resolveMediaUrl(person.imagePath);
+  return (
+    <article className={styles.personCard}>
+      <div className={styles.personImage}>
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={`${person.name}, ${person.professionalTitle}`}
+            loading="lazy"
+          />
+        ) : (
+          <UserRound aria-hidden="true" />
+        )}
+      </div>
+      <div>
+        <span>Academy resource person</span>
+        <h3>{person.name}</h3>
+        <p>
+          {person.professionalTitle}
+          {person.organization ? ` · ${person.organization}` : ""}
+        </p>
+        {person.shortBiography && <small>{person.shortBiography}</small>}
+        {person.expertise?.length > 0 && (
+          <div className={styles.personExpertise} aria-label="Areas of expertise">
+            {person.expertise.slice(0, 3).map((item) => (
+              <em key={item}>{item}</em>
+            ))}
+          </div>
+        )}
+        <div className={styles.personLinks}>
+          <Link to={`/pathfinder-academy/resource-persons/${person.slug}`}>
+            View profile <ArrowRight />
+          </Link>
+        </div>
       </div>
     </article>
   );

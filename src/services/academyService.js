@@ -212,6 +212,17 @@ export async function fetchPublishedResourcePerson(slug) {
   return data ? mapPerson(data) : null;
 }
 
+export async function fetchPublishedResourcePersons() {
+  const { data, error } = await requireSupabase()
+    .from("academy_resource_persons")
+    .select(PERSON_FIELDS)
+    .eq("status", "published")
+    .order("display_order")
+    .order("name");
+  throwQueryError(error, "academy resource-person read");
+  return (data ?? []).map(mapPerson);
+}
+
 export async function fetchAdminAcademy() {
   const client = requireSupabase();
   const [programs, people, assignments, applications, reviews, history, notifications] = await Promise.all([

@@ -3,6 +3,7 @@ import {
   fetchPublishedProgram,
   fetchPublishedPrograms,
   fetchPublishedResourcePerson,
+  fetchPublishedResourcePersons,
 } from "../services/academyService";
 
 export function useAcademyPrograms() {
@@ -15,6 +16,10 @@ export function useAcademyProgram(slug) {
 
 export function useAcademyResourcePerson(slug) {
   return useAcademyRequest(() => fetchPublishedResourcePerson(slug), [slug]);
+}
+
+export function useAcademyResourcePersons() {
+  return useAcademyRequest(fetchPublishedResourcePersons, []);
 }
 
 function useAcademyRequest(request, dependencies) {

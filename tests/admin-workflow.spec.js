@@ -257,6 +257,17 @@ test.describe.serial("admin portal", () => {
   });
 
   test("renders a published academy program and accepts a signed-in internal application", async ({ page }) => {
+    await page.goto("/pathfinder-academy");
+    await expect(page.getByRole("heading", { name: "Academy resource persons" })).toBeVisible();
+    const academyPersonCard = page.locator("article").filter({
+      hasText: `E2E Resource ${runId}`,
+    });
+    await expect(academyPersonCard).toBeVisible();
+    await expect(academyPersonCard.getByRole("link", { name: /View profile/ })).toHaveAttribute(
+      "href",
+      `/pathfinder-academy/resource-persons/e2e-resource-${runId}`,
+    );
+
     await page.goto(`/pathfinder-academy/resource-persons/e2e-resource-${runId}`);
     await expect(page.getByRole("heading", { name: `E2E Resource ${runId}`, exact: true })).toBeVisible();
     const personSchema = JSON.parse(

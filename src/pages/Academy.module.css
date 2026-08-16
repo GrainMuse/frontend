@@ -108,7 +108,7 @@
   border-radius: 20px;
   color: var(--gm-cream);
   background: #2c1a10d9;
-  font-size: .67rem;
+  font-size: .75rem;
   text-transform: uppercase;
   letter-spacing: .12em;
 }
@@ -122,7 +122,7 @@
 
 .programBody>p:first-child {
   color: var(--gm-gold);
-  font-size: .72rem;
+  font-size: .75rem;
   text-transform: uppercase;
   letter-spacing: .12em;
 }
@@ -240,7 +240,7 @@
   color: var(--gm-gold);
   text-transform: uppercase;
   letter-spacing: .18em;
-  font-size: .72rem;
+  font-size: .75rem;
 }
 
 .detailHeroContent h1 {
@@ -377,11 +377,11 @@
   color: #cfc3b0;
   text-transform: uppercase;
   letter-spacing: .12em;
-  font-size: .61rem;
+  font-size: var(--text-xs);
 }
 
 .fact strong {
-  font-size: .88rem;
+  font-size: .9375rem;
 }
 
 .peopleSection {
@@ -390,6 +390,13 @@
 
 .peopleSection>div>h2 {
   margin: 10px 0 44px;
+}
+
+.peopleCount {
+  color: var(--gm-earth);
+  font-size: .8125rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
 }
 
 .peopleGrid {
@@ -432,7 +439,7 @@
 }
 
 .personCard span {
-  font-size: .65rem;
+  font-size: .75rem;
   color: var(--gm-gold);
   letter-spacing: .12em;
   text-transform: uppercase;
@@ -445,11 +452,11 @@
 
 .personCard p {
   color: var(--gm-earth);
-  font-size: .82rem;
+  font-size: .9rem;
 }
 
 .personCard strong {
-  font-size: .8rem;
+  font-size: .875rem;
   margin-top: 15px;
 }
 
@@ -457,6 +464,28 @@
   color: var(--gm-earth);
   line-height: 1.65;
   margin-top: 12px;
+}
+
+.personExpertise {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 16px;
+}
+
+.personExpertise em {
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: var(--gm-parchment);
+  color: var(--gm-earth);
+  font-size: .75rem;
+  font-style: normal;
+}
+
+.personLinks a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
 }
 
 .personLinks {
@@ -526,7 +555,7 @@
 .applicationCard label {
   display: grid;
   gap: 7px;
-  font-size: .73rem;
+  font-size: .75rem;
   font-weight: 600;
   color: var(--gm-earth);
 }
@@ -591,7 +620,7 @@
   color: #3e6a45;
   text-transform: uppercase;
   letter-spacing: .1em;
-  font-size: .65rem;
+  font-size: .75rem;
   font-weight: 700;
 }
 
