@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(59);
+select plan(67);
 
 -- Schema protection is never optional for Data API tables.
 select ok(
@@ -27,6 +27,56 @@ select ok(
 select ok(
   (select relrowsecurity from pg_catalog.pg_class where oid = 'public.site_content'::regclass),
   'site_content has RLS enabled'
+);
+
+select ok(
+  exists(select 1 from storage.buckets where id = 'site-media'),
+  'site-media storage bucket exists'
+);
+select ok(
+  (select public from storage.buckets where id = 'site-media'),
+  'site-media is publicly readable through the CDN'
+);
+select is(
+  (select file_size_limit from storage.buckets where id = 'site-media'),
+  5242880::bigint,
+  'site-media limits uploads to 5 MB'
+);
+select results_eq(
+  $$select unnest(allowed_mime_types) from storage.buckets
+    where id = 'site-media' order by 1$$,
+  $$values ('image/avif'::text), ('image/jpeg'), ('image/png'), ('image/webp')$$,
+  'site-media accepts only supported web image formats'
+);
+select is(
+  (select count(*) from pg_catalog.pg_policies
+   where schemaname = 'storage'
+     and tablename = 'objects'
+     and policyname in (
+       'public reads site media',
+       'staff delete site media',
+       'staff update site media',
+       'staff upload site media'
+     )),
+  4::bigint,
+  'site-media has explicit public-read and staff-write policies'
+);
+select is(
+  (select count(*) from public.products
+   where image_path ~ '^products/.+\.(jpeg|webp)$'),
+  7::bigint,
+  'seeded products reference their CDN object paths'
+);
+select is(
+  (select count(*) from public.team_members
+   where image_path ~ '^team/.+\.(jpeg|webp)$'),
+  5::bigint,
+  'seeded team members reference their CDN object paths'
+);
+select is(
+  (select value ->> 'logo' from public.site_content where key = 'company'),
+  'branding/hero/grainmuse.png',
+  'company branding references its CDN object path'
 );
 
 -- Table/function grants remain least-privilege even if a policy is changed later.

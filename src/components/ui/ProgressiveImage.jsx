@@ -8,23 +8,35 @@ export default function ProgressiveImage({
   frameClassName = "",
   style,
   eager = false,
+  fallbackSrc = null,
 }) {
   const [loaded, setLoaded] = useState(false);
+  const [activeSrc, setActiveSrc] = useState(src);
 
-  useEffect(() => setLoaded(false), [src]);
+  useEffect(() => {
+    setActiveSrc(src);
+    setLoaded(false);
+  }, [src]);
 
   return (
     <span className={`${styles.frame} ${frameClassName}`}>
       {!loaded && <span className={styles.skeleton} aria-hidden="true" />}
       <img
-        src={src}
+        src={activeSrc}
         alt={alt}
         className={`${className} ${styles.image} ${loaded ? styles.loaded : ""}`}
         style={style}
         loading={eager ? "eager" : "lazy"}
         decoding="async"
         onLoad={() => setLoaded(true)}
-        onError={() => setLoaded(true)}
+        onError={() => {
+          if (fallbackSrc && activeSrc !== fallbackSrc) {
+            setActiveSrc(fallbackSrc);
+            setLoaded(false);
+          } else {
+            setLoaded(true);
+          }
+        }}
       />
     </span>
   );

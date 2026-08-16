@@ -8,7 +8,7 @@ export default function ProductCard({
   index = 0,
   showNumber = true,
 }) {
-  const { slug, name, subtitle, desc, tags = [], badge, color } = product;
+  const { slug, name, subtitle, desc, tags = [], badge, color, imagePath } = product;
 
   return (
     <article
@@ -20,7 +20,11 @@ export default function ProductCard({
 
       {/* <div className={styles.icon}>{icon}</div> */}
       <div className={styles.imgWrap}>
-        <ProductImage slug={slug} alt={"avatar" || product.name} />
+        <ProductImage
+          path={imagePath || slug}
+          fallbackSlug={slug}
+          alt={product.name}
+        />
       </div>
       <p className={styles.category}>{subtitle}</p>
       <h3 className={styles.name}>{name}</h3>
@@ -39,13 +43,14 @@ export default function ProductCard({
   );
 }
 
-function ProductImage({ slug, alt }) {
-  const imgUrl = getProductImage(slug);
-  const altText = alt || `${slug.replace(/-/g, " ")} product image`;
+function ProductImage({ path, fallbackSlug, alt }) {
+  const imgUrl = getProductImage(path);
+  const altText = alt || "Product image";
 
   return (
     <ProgressiveImage
       src={imgUrl}
+      fallbackSrc={getProductImage(fallbackSlug)}
       alt={altText}
       style={{
         width: "100%",

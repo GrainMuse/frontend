@@ -6,6 +6,7 @@ import {
   contentCrud,
   updateEnquiryStatus,
 } from "../../services/contentService";
+import { removeSiteImage } from "../../services/mediaService";
 import { AdminLogin, MfaGate } from "./AdminAuthViews";
 import { RecordForm, RecordManager, StaffInvites } from "./AdminContent";
 import { AdminHeader, AdminOverview, AdminSidebar } from "./AdminLayout";
@@ -81,6 +82,7 @@ export function AdminPortal() {
             ? contentCrud.deleteTeamMember
             : contentCrud.deleteSiteContent;
     await operation(record.id);
+    await removeSiteImage(record.imagePath).catch(() => undefined);
     await refreshData();
     setNotice("Record deleted.");
   }

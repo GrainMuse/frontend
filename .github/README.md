@@ -46,3 +46,9 @@ stored in GitHub or passed through these workflows.
 Both workflows preview pending migrations before applying them and never use
 `--include-seed`, `db reset`, or a service-role key. Production also requires
 typing `DEPLOY_PRODUCTION` when dispatching the workflow.
+
+After applying migrations, both workflows run `scripts/sync-site-media.sh`.
+It uploads missing files from `src/images/products`, `team`, `hero`, and `logo`
+to the `site-media` bucket using the linked project and deployment access token.
+The synchronizer is idempotent: it never deletes Storage objects and skips files
+that already exist, including assets created through the admin portal.

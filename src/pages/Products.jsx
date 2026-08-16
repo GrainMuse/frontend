@@ -211,6 +211,7 @@ function FullProductCard({ product, index, expanded, onToggle }) {
     nutrition,
     badge,
     color,
+    imagePath,
   } = product;
 
   return (
@@ -221,7 +222,7 @@ function FullProductCard({ product, index, expanded, onToggle }) {
     >
       <div className={styles.pcTop}>
         <div className={styles.pcLeft}>
-          <ProductImage slug={slug} alt={"avatar" || name} />
+          <ProductImage path={imagePath || slug} fallbackSlug={slug} alt={name} />
           {badge && <span className={styles.pcBadge}>{badge}</span>}
         </div>
         <div className={styles.pcContent}>
@@ -301,13 +302,14 @@ function FullProductCard({ product, index, expanded, onToggle }) {
   );
 }
 
-function ProductImage({ slug, alt }) {
-  const imgUrl = getProductImage(slug);
-  const altText = alt || `${slug.replace(/-/g, " ")} product image`;
+function ProductImage({ path, fallbackSlug, alt }) {
+  const imgUrl = getProductImage(path);
+  const altText = alt || "Product image";
 
   return (
     <ProgressiveImage
       src={imgUrl}
+      fallbackSrc={getProductImage(fallbackSlug)}
       alt={altText}
       style={{
         width: "100%",
