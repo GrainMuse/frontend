@@ -110,15 +110,15 @@ function mapTeamMember(row) {
   };
 }
 
-export async function fetchPublicContent({ force = false } = {}) {
+export async function fetchPublicContent({ force = false, signal } = {}) {
   if (publicContentRequest && !force) return publicContentRequest;
 
   const client = requireSupabase();
   publicContentRequest = Promise.all([
-    client.from("product_categories").select(CATEGORY_FIELDS).order("display_order"),
-    client.from("products").select(PRODUCT_FIELDS).order("display_order"),
-    client.from("team_members").select(TEAM_FIELDS).order("display_order"),
-    client.from("site_content").select(SITE_CONTENT_FIELDS).order("key"),
+    client.from("product_categories").select(CATEGORY_FIELDS).order("display_order").abortSignal(signal),
+    client.from("products").select(PRODUCT_FIELDS).order("display_order").abortSignal(signal),
+    client.from("team_members").select(TEAM_FIELDS).order("display_order").abortSignal(signal),
+    client.from("site_content").select(SITE_CONTENT_FIELDS).order("key").abortSignal(signal),
   ]).then(([categoriesResult, productsResult, teamResult, siteResult]) => {
     throwQueryError(categoriesResult.error, "category read");
     throwQueryError(productsResult.error, "product read");

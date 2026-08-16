@@ -8,6 +8,8 @@ import Marquee from "../components/common/Marquee";
 import { useContent } from "../context/contentStore";
 import { getProductImage } from "../images/imageRegistry";
 import SEOHead from "../components/common/SEOHead";
+import LoadingSkeleton from "../components/ui/LoadingSkeleton";
+import ProgressiveImage from "../components/ui/ProgressiveImage";
 import styles from "./Products.module.css";
 
 export default function Products() {
@@ -92,7 +94,9 @@ export default function Products() {
       </div>
 
       <div className={`container ${styles.pageBody}`}>
-        {loading && <p role="status">Loading products…</p>}
+        {loading && (
+          <LoadingSkeleton variant="rows" count={4} label="Loading products" />
+        )}
         {error && (
           <div role="alert">
             <p>{error}</p>
@@ -302,7 +306,7 @@ function ProductImage({ slug, alt }) {
   const altText = alt || `${slug.replace(/-/g, " ")} product image`;
 
   return (
-    <img
+    <ProgressiveImage
       src={imgUrl}
       alt={altText}
       style={{
@@ -312,8 +316,6 @@ function ProductImage({ slug, alt }) {
         display: "block",
         borderRadius: "12px",
       }}
-      loading="lazy"
-      decoding="async"
     />
   );
 }

@@ -16,6 +16,8 @@ import { DEPT_COLORS } from "../data";
 import { useContent } from "../context/contentStore";
 import { getTeamImage } from "../images/imageRegistry";
 import SEOHead from "../components/common/SEOHead";
+import LoadingSkeleton from "../components/ui/LoadingSkeleton";
+import ProgressiveImage from "../components/ui/ProgressiveImage";
 import styles from "./Team.module.css";
 
 export default function Team() {
@@ -69,7 +71,9 @@ export default function Team() {
       <section className={`section-pad ${styles.teamSection}`}>
         <div className="container">
           <div className={styles.teamGrid}>
-            {loading && <p role="status">Loading team members…</p>}
+            {loading && (
+              <LoadingSkeleton count={3} label="Loading team members" />
+            )}
             {error && (
               <div role="alert">
                 <p>{error}</p>
@@ -320,7 +324,7 @@ function MemberModal({ member, onClose }) {
 function TeamMemberPhoto({ slug, name }) {
   const imgUrl = getTeamImage(slug);
   return (
-    <img
+    <ProgressiveImage
       src={imgUrl}
       alt={`${name} — Grain Muse team`}
       style={{
@@ -330,8 +334,6 @@ function TeamMemberPhoto({ slug, name }) {
         display: "block",
         borderRadius: "12px",
       }}
-      loading="lazy"
-      decoding="async"
     />
   );
 }

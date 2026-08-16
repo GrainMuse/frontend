@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 
 export function useScrollReveal(deps = []) {
   useEffect(() => {
+    let observer;
+    let mutationObserver;
+
     const timer = setTimeout(() => {
-      const els = document.querySelectorAll('.sr:not(.in)');
-      if (!els.length) return;
-      const observer = new IntersectionObserver(
+      observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
@@ -16,10 +17,32 @@ export function useScrollReveal(deps = []) {
         },
         { threshold: 0.1, rootMargin: '0px 0px -30px 0px' }
       );
-      els.forEach((el) => observer.observe(el));
-      return () => observer.disconnect();
+
+      const observeRevealElements = (root) => {
+        if (root instanceof Element && root.matches('.sr:not(.in)')) {
+          observer.observe(root);
+        }
+        root.querySelectorAll?.('.sr:not(.in)').forEach((el) => observer.observe(el));
+      };
+
+      observeRevealElements(document);
+
+      // Public content is loaded asynchronously. Observe cards that are added
+      // after the first render so they do not stay hidden until a page refresh.
+      mutationObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node instanceof Element) observeRevealElements(node);
+          });
+        });
+      });
+      mutationObserver.observe(document.body, { childList: true, subtree: true });
     }, 80);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      mutationObserver?.disconnect();
+      observer?.disconnect();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 }

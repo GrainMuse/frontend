@@ -6,6 +6,7 @@ import AnimatedCounter from "../components/ui/AnimatedCounter";
 import Marquee from "../components/common/Marquee";
 import { useContent } from "../context/contentStore";
 import SEOHead from "../components/common/SEOHead";
+import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 import styles from "./About.module.css";
 
 const PILLARS = [
@@ -37,7 +38,7 @@ const STATS = [
 ];
 
 export default function About() {
-  const { processSteps } = useContent();
+  const { processSteps, loading } = useContent();
   useScrollReveal([]);
 
   return (
@@ -168,6 +169,13 @@ export default function About() {
             </p>
           </div>
           <div className={styles.processSteps}>
+            {loading && (
+              <LoadingSkeleton
+                variant="lines"
+                count={4}
+                label="Loading production process"
+              />
+            )}
             {processSteps.map((step, i) => (
               <div
                 key={step.step}
