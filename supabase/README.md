@@ -47,14 +47,15 @@ The `submit-contact` function requires:
 - Exact comma-separated origins in `ALLOWED_ORIGINS` (no wildcard)
 - Cloudflare Turnstile secret and expected hostnames
 - A random `RATE_LIMIT_SALT` of at least 32 characters
-  - `CONTACT_EMAIL_PROVIDER=emailjs` with EmailJS service, contact-template,
-    and public-key settings, or
-    `CONTACT_EMAIL_PROVIDER=resend` with a Resend API key and verified sender
+- `CONTACT_EMAIL_PROVIDER=emailjs` with EmailJS service, contact-template,
+  and public-key settings
 - A destination mailbox in `CONTACT_TO_EMAIL`
 
-With EmailJS, address the contact template to the Grain Muse mailbox. In that
-template's **Auto-Reply** tab, link the auto-reply template and configure its
-recipient as `{{email}}`.
+Keep the existing contact template linked to its auto-reply. Update that auto-reply
+with the conditional contact/academy HTML documented in
+`functions/process-academy-notifications/EMAILJS_TEMPLATE.md`. The academy
+processor calls the existing auto-reply template directly, so no third EmailJS
+template is needed.
 Set `EMAILJS_PRIVATE_KEY` when private-key authorization is enabled in the
 EmailJS account. These are Edge Function secrets, not browser `VITE_` values.
 
@@ -90,7 +91,7 @@ Use `npm run supabase:start:full` only when local Logs Explorer support is
 required and Docker Desktop has been configured for the Analytics service.
 
 The hybrid production path uses the Supabase contact backend so every accepted
-enquiry is stored before EmailJS or Resend notification delivery is attempted.
+enquiry is stored before EmailJS notification delivery is attempted.
 
 ## Local browser integration test
 

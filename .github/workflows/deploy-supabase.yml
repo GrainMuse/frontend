@@ -15,6 +15,11 @@ on:
         required: true
         default: true
         type: boolean
+      deploy_academy_notification_function:
+        description: Deploy the PATHFINDER notification processor
+        required: true
+        default: true
+        type: boolean
       production_confirmation:
         description: Type DEPLOY_PRODUCTION when targeting production
         required: false
@@ -63,6 +68,7 @@ jobs:
         run: |
           npm run lint
           npm run test:contact
+          npm run test:academy:notifications
           npm run test:deployment
           npm run test:admin:api
           npm run build
@@ -139,6 +145,17 @@ jobs:
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
         run: >-
           npx supabase functions deploy submit-contact
+          --project-ref "$SUPABASE_PROJECT_ID"
+          --no-verify-jwt
+          --use-api
+
+      - name: Deploy academy notification processor
+        if: inputs.deploy_academy_notification_function
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+        run: >-
+          npx supabase functions deploy process-academy-notifications
           --project-ref "$SUPABASE_PROJECT_ID"
           --no-verify-jwt
           --use-api

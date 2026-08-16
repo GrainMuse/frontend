@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{subject}}</title>
+    <style>
+      @media only screen and (max-width:620px) {
+        .email-card { width:100% !important; }
+        .email-pad { padding-left:24px !important; padding-right:24px !important; }
+        .email-heading { font-size:29px !important; line-height:35px !important; }
+        .email-button { display:block !important; text-align:center !important; }
+      }
+    </style>
+  </head>
+  <body style="margin:0; padding:0; background:#f7f7f7; color:#333333;">
+    <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">{{preheader}}</div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%; background:#f7f7f7;">
+      <tr>
+        <td align="center" style="padding:28px 14px;">
+          <table class="email-card" role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" style="width:600px; max-width:600px; background:#ffffff; border:1px solid #e8e3da; border-radius:12px; overflow:hidden; box-shadow:0 8px 28px rgba(44,26,16,.08);">
+
+            <!-- Existing contact-template auto reply -->
+            {{#is_contact_confirmation}}
+            <tr>
+              <td class="email-pad" style="background:#d4a843; color:#ffffff; padding:24px 36px; border-bottom:4px solid #b78a2d;">
+                <div style="font-family:Arial,sans-serif; font-size:23px; line-height:30px; font-weight:700;">Thank You for Contacting Grain Muse</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="email-pad" style="padding:34px 36px 12px; font-family:Arial,sans-serif; color:#4a423a; font-size:15px; line-height:25px;">
+                <p style="margin:0 0 18px;">Hi <strong style="color:#2c1a10;">{{from_name}}</strong>,</p>
+                <p style="margin:0 0 25px;">Thank you for reaching out to us. We’ve received your enquiry and our team will get back to you within one business day.</p>
+                <div style="font-size:18px; line-height:24px; font-weight:700; color:#2c1a10;">Your submission</div>
+                <p style="margin:16px 0 8px;"><strong>Enquiry type:</strong> {{enquiry_type}}</p>
+                <div style="margin-top:15px; padding:18px; background:#faf8f3; border-left:4px solid #d4a843; white-space:pre-line; color:#51483f;">{{message}}</div>
+                <div style="margin-top:24px; padding-top:20px; border-top:1px solid #ebe5db; color:#82766b; font-size:12px; line-height:19px;">Submitted on: {{submitted_at}}</div>
+                <p style="margin:22px 0 12px;">If your enquiry is urgent, contact us directly at <a href="mailto:trade@grainmuse.net" style="color:#4e6040; font-weight:700;">trade@grainmuse.net</a>.</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#f0f0f0; padding:16px; text-align:center; font-family:Arial,sans-serif; font-size:11px; line-height:18px; color:#70675f;">© Grain Muse · Crafted with natural goodness</td>
+            </tr>
+            {{/is_contact_confirmation}}
+
+            <!-- Direct PATHFINDER Academy notification -->
+            {{#is_academy}}
+            <tr>
+              <td class="email-pad" style="background:#263c2b; color:#ffffff; padding:25px 40px; border-bottom:4px solid #bf9a56;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td style="font-family:Arial,sans-serif; font-size:18px; font-weight:700; letter-spacing:2px;">PATHFINDER</td>
+                    <td align="right" style="font-family:Arial,sans-serif; color:#d9c58f; font-size:11px; font-weight:700; letter-spacing:1.5px;">ACADEMY</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td class="email-pad" style="padding:46px 40px 22px;">
+                <div style="font-family:Arial,sans-serif; color:#7a684b; font-size:11px; line-height:16px; font-weight:700; letter-spacing:2px;">{{eyebrow}}</div>
+                <h1 class="email-heading" style="margin:13px 0 20px; color:#2c1a10; font-family:Georgia,'Times New Roman',serif; font-size:38px; line-height:45px; font-weight:400;">{{headline}}</h1>
+                <div style="width:52px; height:3px; background:#bf9a56;"></div>
+              </td>
+            </tr>
+            <tr>
+              <td class="email-pad" style="padding:9px 40px 18px;">
+                <div style="white-space:pre-line; font-family:Arial,sans-serif; color:#51483f; font-size:16px; line-height:27px;">{{message}}</div>
+              </td>
+            </tr>
+            <tr>
+              <td class="email-pad" style="padding:18px 40px 44px;">
+                <a class="email-button" href="{{action_url}}" style="display:inline-block; padding:14px 22px; background:#263c2b; border-radius:7px; color:#ffffff; font-family:Arial,sans-serif; font-size:14px; font-weight:700; text-decoration:none;">{{action_label}} &nbsp;→</a>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#f2efe9; padding:17px 36px; text-align:center; font-family:Arial,sans-serif; color:#756b61; font-size:11px; line-height:18px;">PATHFINDER Academy · Grain Muse</td>
+            </tr>
+            {{/is_academy}}
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

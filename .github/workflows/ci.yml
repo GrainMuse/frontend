@@ -46,6 +46,9 @@ jobs:
       - name: Test contact validation
         run: npm run test:contact
 
+      - name: Test academy notification templates
+        run: npm run test:academy:notifications
+
       - name: Test deployment guard
         run: npm run test:deployment
 

@@ -23,6 +23,7 @@ const adminEmail = `admin-e2e-${runId}@grainmuse.local`;
 const editorEmail = `editor-e2e-${runId}@grainmuse.local`;
 const outsiderEmail = `outsider-e2e-${runId}@grainmuse.local`;
 const invitedEmail = `invited-e2e-${runId}@grainmuse.local`;
+const applicantEmail = `applicant-e2e-${runId}@grainmuse.local`;
 const password = `Admin-${runId}-Pass!7`;
 const createdUsers = [];
 const sql = databaseUrl ? postgres(databaseUrl, { max: 1 }) : null;
@@ -80,6 +81,7 @@ test.describe.serial("admin portal", () => {
     await createUser(request, adminEmail, "admin");
     await createUser(request, editorEmail, "editor");
     await createUser(request, outsiderEmail, null);
+    await createUser(request, applicantEmail, null);
     const authAdmin = createClient(apiUrl, adminKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
@@ -125,6 +127,9 @@ test.describe.serial("admin portal", () => {
       await sql`delete from public.product_categories where slug like 'e2e-category-%'`;
       await sql`delete from public.team_members where slug like 'e2e-member-%'`;
       await sql`delete from public.site_content where key like 'e2e_content_%'`;
+      await sql`delete from public.academy_applications where email = ${applicantEmail}`;
+      await sql`delete from public.academy_programs where slug like 'e2e-academy-%'`;
+      await sql`delete from public.academy_resource_persons where slug like 'e2e-resource-%'`;
       await sql`delete from public.contact_submissions where source = 'e2e'`;
       await sql`delete from private.admin_invitations where email = ${invitedEmail}`;
     }
@@ -189,6 +194,29 @@ test.describe.serial("admin portal", () => {
     await page.getByRole("button", { name: "Save record" }).click();
     await expect(page.getByText(`e2e_content_${runId}`)).toBeVisible();
 
+    await page.getByRole("button", { name: "PATHFINDER Academy" }).click();
+    await page.getByRole("button", { name: /Resource persons/ }).click();
+    await page.getByRole("button", { name: "Add person" }).click();
+    await page.getByLabel("Name").fill(`E2E Resource ${runId}`);
+    await page.getByLabel("Slug").fill(`e2e-resource-${runId}`);
+    await page.getByLabel("Professional title").fill("Learning Facilitator");
+    await page.getByLabel("Short biography").fill("An experienced facilitator created for the academy browser test.");
+    await page.getByLabel("Status").selectOption("published");
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(page.getByTestId("academy-record-row").filter({ hasText: `E2E Resource ${runId}` })).toBeVisible();
+
+    await page.getByRole("button", { name: /Programs/ }).click();
+    await page.getByRole("button", { name: "Add program" }).click();
+    await page.getByLabel("Title", { exact: true }).fill(`E2E Academy ${runId}`);
+    await page.getByLabel("Slug").fill(`e2e-academy-${runId}`);
+    await page.getByLabel("Summary").fill("A secure end-to-end academy program.");
+    await page.getByLabel("Description", { exact: true }).fill("This program verifies public academy content and the authenticated internal application journey.");
+    await page.getByLabel("External application URL").fill("https://example.com/pathfinder-application");
+    await page.getByLabel(new RegExp(`E2E Resource ${runId}`)).check();
+    await page.getByLabel("Status").selectOption("published");
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(page.getByTestId("academy-record-row").filter({ hasText: `E2E Academy ${runId}` })).toBeVisible();
+
     await page.route("**/api/admin/invitations", (route) =>
       route.fulfill({
         status: 201,
@@ -228,6 +256,28 @@ test.describe.serial("admin portal", () => {
     await row.getByRole("button", { name: "Delete" }).click();
   });
 
+  test("renders a published academy program and accepts a signed-in internal application", async ({ page }) => {
+    await page.goto(`/pathfinder-academy/programs/e2e-academy-${runId}`);
+    await expect(page.getByRole("heading", { name: `E2E Academy ${runId}`, exact: true })).toBeVisible();
+    await expect(page.getByText(`E2E Resource ${runId}`, { exact: true })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Open external form/ })).toHaveAttribute("href", "https://example.com/pathfinder-application");
+
+    await page.getByLabel("Email").fill(applicantEmail);
+    await page.getByLabel("Password").fill(password);
+    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Internal application" })).toBeVisible();
+    await page.getByLabel("Full name").fill("E2E Academy Applicant");
+    await page.getByLabel("Why do you want to join?").fill("I want to verify the complete secure internal application workflow.");
+    await page.getByRole("button", { name: "Submit application" }).click();
+    await expect(page.getByText("Your application has been submitted successfully.")).toBeVisible();
+    await page.getByRole("link", { name: "View my applications" }).click();
+    const myApplication = page.locator("article").filter({ hasText: `E2E Academy ${runId}` });
+    await expect(myApplication).toBeVisible();
+    page.once("dialog", (dialog) => dialog.accept());
+    await myApplication.getByRole("button", { name: "Withdraw application" }).click();
+    await expect(myApplication.getByText("withdrawn", { exact: true })).toBeVisible();
+  });
+
   test("triages enquiries and requires TOTP on the next login", async ({ page }) => {
     await signIn(page, adminEmail);
     await expect(page.getByRole("heading", { name: "Verify it’s you" })).toBeVisible();
@@ -236,6 +286,29 @@ test.describe.serial("admin portal", () => {
     await expect(page.getByText("verification code was not accepted")).toBeVisible();
     await page.getByLabel("Authenticator code").fill(currentCode(totpSecret));
     await page.getByRole("button", { name: "Verify code" }).click();
+    await page.getByRole("button", { name: "PATHFINDER Academy" }).click();
+    await page.getByRole("button", { name: /Applications/ }).click();
+    const application = page.locator("article").filter({ hasText: applicantEmail });
+    await expect(application).toBeVisible();
+    await application.locator("select").selectOption("reviewing");
+    await expect(application.locator("select")).toHaveValue("reviewing");
+    await application.getByRole("button", { name: "Review" }).click();
+    await page.getByLabel("Decision status").selectOption("shortlisted");
+    await page.getByLabel("Private review notes").fill("Strong motivation. Verify availability before the final decision.");
+    await page.getByRole("button", { name: "Save review" }).click();
+    await expect(page.getByText("Application review saved.")).toBeVisible();
+    await page.getByLabel("Filter by application status").selectOption("shortlisted");
+    await expect(application).toBeVisible();
+    const downloadPromise = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Export CSV" }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(/^pathfinder-applications-\d{4}-\d{2}-\d{2}\.csv$/);
+    await page.getByRole("button", { name: /Email delivery/ }).click();
+    const notificationRows = page.getByTestId("academy-notification-row");
+    await expect(notificationRows.filter({ hasText: "application submitted" })).toBeVisible();
+    await expect(notificationRows.filter({ hasText: "admin new application" })).toBeVisible();
+    await expect(notificationRows.filter({ hasText: "application withdrawn" })).toBeVisible();
+    await expect(notificationRows.filter({ hasText: "application status changed" })).toBeVisible();
     await page.getByRole("button", { name: "Enquiries" }).click();
     const card = page.getByTestId("enquiry-card").filter({ hasText: `buyer-${runId}@example.test` });
     await expect(card).toBeVisible();

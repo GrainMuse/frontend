@@ -213,23 +213,17 @@ async function sendNotifications(
 }> {
   try {
     const provider = requiredEnv("CONTACT_EMAIL_PROVIDER").toLowerCase();
-    if (provider !== "emailjs" && provider !== "resend") {
+    if (provider !== "emailjs") {
       throw new Error("Unsupported contact email provider");
     }
     const toEmail = requiredEnv("CONTACT_TO_EMAIL");
-    const config = provider === "emailjs"
-      ? {
-        serviceId: requiredEnv("EMAILJS_SERVICE_ID"),
-        templateId: requiredEnv("EMAILJS_TEMPLATE_ID"),
-        publicKey: requiredEnv("EMAILJS_PUBLIC_KEY"),
-        privateKey: Deno.env.get("EMAILJS_PRIVATE_KEY")?.trim() || undefined,
-        toEmail,
-      }
-      : {
-        apiKey: requiredEnv("RESEND_API_KEY"),
-        fromEmail: requiredEnv("CONTACT_FROM_EMAIL"),
-        toEmail,
-      };
+    const config = {
+      serviceId: requiredEnv("EMAILJS_SERVICE_ID"),
+      templateId: requiredEnv("EMAILJS_TEMPLATE_ID"),
+      publicKey: requiredEnv("EMAILJS_PUBLIC_KEY"),
+      privateKey: Deno.env.get("EMAILJS_PRIVATE_KEY")?.trim() || undefined,
+      toEmail,
+    };
 
     const notificationResult = await sendContactNotification({
       provider,
@@ -238,18 +232,10 @@ async function sendNotifications(
       value,
     }).catch(() => ({ ok: false, status: 0 }));
 
-    if (provider !== "emailjs") {
-      return {
-        notificationSent: notificationResult.ok,
-        confirmationSent: false,
-        notificationStatus: notificationResult.status,
-      };
-    }
-
     return {
       notificationSent: notificationResult.ok,
-      // EmailJS triggers the linked auto-reply from the same accepted template
-      // request. The auto-reply template is configured in the EmailJS dashboard.
+      // The existing EmailJS template triggers its linked auto-reply using the
+      // same parameters. Academy delivery calls that auto-reply template directly.
       confirmationSent: notificationResult.ok,
       notificationStatus: notificationResult.status,
       confirmationStatus: notificationResult.status,

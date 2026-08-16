@@ -17,7 +17,7 @@ const IMAGE_EXTENSIONS = Object.freeze({
 });
 
 export function isStorageMediaPath(path) {
-  return typeof path === "string" && /^(products|team|branding)\//.test(path);
+  return typeof path === "string" && /^(products|team|branding|academy)\//.test(path);
 }
 
 export function resolveMediaUrl(path, localImages = {}) {
@@ -37,7 +37,15 @@ export async function uploadSiteImage(file, folder, slug) {
   if (file.size > MAX_IMAGE_BYTES) {
     throw new Error("Images must be 5 MB or smaller.");
   }
-  if (!new Set(["products", "team", "branding"]).has(folder)) {
+  if (
+    !new Set([
+      "products",
+      "team",
+      "branding",
+      "academy/programs",
+      "academy/resource-persons",
+    ]).has(folder)
+  ) {
     throw new Error("Invalid media folder.");
   }
 

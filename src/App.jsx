@@ -12,6 +12,10 @@ import Team from "./pages/Team";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
+import Academy from "./pages/Academy";
+import AcademyProgram from "./pages/AcademyProgram";
+import AcademyResourcePerson from "./pages/AcademyResourcePerson";
+import AcademyAccount from "./pages/AcademyAccount";
 
 export default function App() {
   const location = useLocation();
@@ -55,6 +59,38 @@ export default function App() {
               element={
                 <PageTransition variant="slideUp">
                   <Team />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/pathfinder-academy"
+              element={
+                <PageTransition variant="slideUp">
+                  <Academy />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/pathfinder-academy/programs/:programSlug"
+              element={
+                <PageTransition variant="slideUp">
+                  <AcademyProgram />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/pathfinder-academy/account"
+              element={
+                <PageTransition variant="slideUp">
+                  <AcademyAccount />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/pathfinder-academy/resource-persons/:personSlug"
+              element={
+                <PageTransition variant="slideUp">
+                  <AcademyResourcePerson />
                 </PageTransition>
               }
             />

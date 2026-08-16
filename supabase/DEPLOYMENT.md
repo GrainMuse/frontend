@@ -73,25 +73,45 @@ Set these in the staging project's Edge Function Secrets settings:
 - `TURNSTILE_SECRET_KEY`
 - `TURNSTILE_EXPECTED_HOSTNAMES`
 - `RATE_LIMIT_SALT` - at least 32 cryptographically random characters
-- `CONTACT_EMAIL_PROVIDER` - `emailjs` or `resend`
+- `CONTACT_EMAIL_PROVIDER` - must be `emailjs`
 - `CONTACT_TO_EMAIL`
-- For EmailJS: `EMAILJS_SERVICE_ID`, `EMAILJS_TEMPLATE_ID`, and
+- `EMAILJS_SERVICE_ID`, `EMAILJS_TEMPLATE_ID`, `EMAILJS_AUTOREPLY_TEMPLATE_ID`, and
   `EMAILJS_PUBLIC_KEY`; also set `EMAILJS_PRIVATE_KEY` when private-key
-  authorization is enabled in EmailJS. Link the auto-reply template to the
-  contact template in the EmailJS dashboard.
-- For Resend: `RESEND_API_KEY` and `CONTACT_FROM_EMAIL` using a verified domain
+  authorization is enabled in EmailJS. Keep the main contact template linked to
+  the existing auto-reply template. The academy processor calls that same
+  auto-reply template ID directly.
+- `ACADEMY_ADMIN_EMAIL` - mailbox that receives new application alerts
+- `ACADEMY_NOTIFICATION_PROCESSOR_SECRET` - at least 32 random characters,
+  used only by the scheduled retry invocation
 
 Do not put these values in Vite variables, Git, shell history, or this document.
+Do not remove the main contact template's linked auto-reply. Replace the existing
+auto-reply template body with the conditional content documented in
+`functions/process-academy-notifications/EMAILJS_TEMPLATE.md`. Academy messages
+call the auto-reply template directly and therefore do not trigger another reply.
 
 ## 5. Deploy and inspect the function
 
 ```bash
 npx supabase functions deploy submit-contact --no-verify-jwt
+npx supabase functions deploy process-academy-notifications --no-verify-jwt
 ```
 
 The endpoint is intentionally public at the JWT gateway layer. It performs exact
 origin validation, Turnstile verification, payload validation, and atomic rate
 limiting before its privileged database insert.
+
+The academy notification processor accepts either a valid signed-in user token
+from the configured frontend origin or the processor secret in the
+`x-academy-processor-secret` header. Configure a Supabase Cron job to invoke it
+every five minutes with that secret. The database outbox claims rows atomically,
+reclaims locks older than 15 minutes, retries failures with exponential backoff,
+and stops after five attempts. Never place the processor secret in frontend
+environment variables.
+
+After deployment, submit a staging application and verify the Email delivery tab
+shows two `sent` records: the applicant confirmation and administrator alert.
+Then withdraw the application and verify the withdrawal confirmation is logged.
 
 ## 6. Activate the staging frontend
 
@@ -107,7 +127,7 @@ Run one successful submission and verify all of the following:
 - Browser receives HTTP 202 from `submit-contact`
 - One row appears in `contact_submissions`
 - Turnstile token cannot be reused
-- Notification from the configured EmailJS or Resend provider arrives at the
+- Notification from EmailJS arrives at the
   configured mailbox
 - `notification_status` becomes `sent`
 - Disallowed origins receive HTTP 403
