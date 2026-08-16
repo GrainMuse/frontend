@@ -188,7 +188,7 @@
 }
 .quoteAuthor {
   font-family: var(--font-body);
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;

@@ -35,7 +35,7 @@
   line-height: 1;
 }
 .statLabel {
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -116,7 +116,7 @@
 /* Card info */
 .cardInfo { padding: 24px 28px 20px; }
 .cardDept {
-  font-size: 0.65rem;
+  font-size: var(--text-xs);
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -211,7 +211,7 @@
 }
 .cultureValueNum {
   font-family: var(--font-body);
-  font-size: 0.65rem;
+  font-size: var(--text-xs);
   font-weight: 700;
   letter-spacing: 0.16em;
   color: var(--gm-gold);
@@ -313,7 +313,7 @@
 .modalContactLink:hover { color: var(--gm-gold); border-color: rgba(191,154,86,0.4); }
 .modalContactLink svg { flex-shrink: 0; color: var(--gm-gold); }
 .modalJoined {
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   color: rgba(250,244,234,0.35);
   text-align: center;
   letter-spacing: 0.06em;
@@ -330,7 +330,7 @@
 }
 .modalDept {
   display: inline-block;
-  font-size: 0.65rem;
+  font-size: var(--text-xs);
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -378,7 +378,7 @@
   top: 16px; left: 10px;
 }
 .modalSkillsLabel {
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;

@@ -9,7 +9,7 @@
     min-height: 100vh;
     background: #f5f3ec;
     color: #223126;
-    font-family: Inter, Arial, sans-serif
+    font-family: var(--font-body)
 }
 
 .adminShell {
@@ -59,7 +59,7 @@
 }
 
 .eyebrow {
-    font-size: 11px;
+    font-size: .75rem;
     font-weight: 800;
     letter-spacing: .18em;
     color: #8a795b;
@@ -67,7 +67,7 @@
 }
 
 .login h1 {
-    font: 500 50px/1.05 Georgia, serif;
+    font: 500 50px/1.05 var(--font-display);
     margin: 9px 0 16px
 }
 
@@ -86,7 +86,7 @@
 .drawer label {
     display: grid;
     gap: 8px;
-    font-size: 12px;
+    font-size: .8rem;
     font-weight: 700;
     color: #4b564d
 }
@@ -156,7 +156,7 @@
     border-radius: 7px;
     background: #ece9df;
     color: #4f5b52 !important;
-    font-size: 13px
+    font-size: .875rem
 }
 
 .loginArt {
@@ -171,7 +171,7 @@
 }
 
 .loginArt span {
-    font-size: 11px;
+    font-size: .75rem;
     letter-spacing: .2em
 }
 
@@ -179,7 +179,7 @@
     position: relative;
     z-index: 2;
     max-width: 500px;
-    font: 400 44px/1.18 Georgia, serif;
+    font: 500 44px/1.18 var(--font-display);
     margin: 0
 }
 
@@ -197,7 +197,7 @@
 
 .error {
     color: #9f382f !important;
-    font-size: 13px
+    font-size: .875rem
 }
 
 .sidebar {
@@ -230,12 +230,12 @@
 }
 
 .brand strong {
-    font: 500 20px Georgia, serif
+    font: 500 20px var(--font-display)
 }
 
 .brand span,
 .account span {
-    font-size: 10px;
+    font-size: var(--text-xs);
     color: #9aaa9c;
     text-transform: uppercase;
     letter-spacing: .14em;
@@ -274,7 +274,7 @@
     color: #fff;
     border-radius: 10px;
     padding: 2px 7px;
-    font-size: 10px
+    font-size: var(--text-xs)
 }
 
 .account {
@@ -290,7 +290,7 @@
     max-width: 135px;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 11px
+    font-size: .75rem
 }
 
 .account>button {
@@ -324,7 +324,7 @@
 }
 
 .topbar h1 {
-    font: 500 28px Georgia, serif;
+    font: 500 28px var(--font-display);
     margin: 4px 0
 }
 
@@ -332,7 +332,7 @@
     display: flex;
     align-items: center;
     gap: 7px;
-    font-size: 12px;
+    font-size: .75rem;
     color: #58705c
 }
 
@@ -381,7 +381,7 @@
 }
 
 .welcome h2 {
-    font: 500 36px Georgia, serif;
+    font: 500 36px var(--font-display);
     margin: 7px 0 12px
 }
 
@@ -390,7 +390,7 @@
 }
 
 .harvest {
-    font: italic 43px/1.15 Georgia, serif;
+    font: italic 43px/1.15 var(--font-display);
     color: #a3854f;
     padding: 30px 55px;
     border: 1px solid #a3854f55;
@@ -419,12 +419,12 @@
 }
 
 .stats span {
-    font-size: 12px;
+    font-size: .75rem;
     color: #758077
 }
 
 .stats strong {
-    font: 500 33px Georgia, serif;
+    font: 500 33px var(--font-display);
     grid-column: 1
 }
 
@@ -456,7 +456,7 @@
     padding: 2px 7px;
     border-radius: 10px;
     background: #ffffffaa;
-    font-size: 10px
+    font-size: var(--text-xs)
 }
 
 .subnav .subnavActive {
@@ -488,7 +488,7 @@
 
 .assignmentField legend {
     padding: 0 6px;
-    font-size: 12px;
+    font-size: .75rem;
     font-weight: 800;
     color: #4b564d
 }
@@ -534,7 +534,7 @@
 }
 
 .recent h3 {
-    font: 500 18px Georgia, serif;
+    font: 500 18px var(--font-display);
     margin: 0
 }
 
@@ -553,7 +553,7 @@
     align-items: center;
     padding: 14px 24px;
     border-top: 1px solid #f0eee8;
-    font-size: 13px
+    font-size: .875rem
 }
 
 .productDot {
@@ -565,7 +565,7 @@
 .recent i,
 .tableRow i {
     font-style: normal;
-    font-size: 10px;
+    font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: .08em;
     padding: 5px 8px;
@@ -636,7 +636,7 @@
 }
 
 .tableHead {
-    font-size: 10px;
+    font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: .12em;
     color: #8b938c;
@@ -646,7 +646,7 @@
 .tableRow {
     min-height: 68px;
     border-top: 1px solid #efede6;
-    font-size: 13px
+    font-size: .875rem
 }
 
 .tableRow strong {
@@ -706,7 +706,7 @@
 }
 
 .drawer h2 {
-    font: 500 27px Georgia, serif;
+    font: 500 27px var(--font-display);
     margin: 4px 0
 }
 
@@ -781,14 +781,14 @@
     align-items: center;
     padding: 14px 24px;
     border-top: 1px solid #efede6;
-    font-size: 12px
+    font-size: .75rem
 }
 
 .notificationTable .notificationHead {
     border-top: 0;
     background: #faf9f5;
     color: #8b938c;
-    font-size: 10px;
+    font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: .12em
 }
@@ -814,7 +814,7 @@
     padding: 5px 8px;
     border-radius: 12px;
     font-style: normal;
-    font-size: 10px;
+    font-size: var(--text-xs);
     text-transform: uppercase;
     letter-spacing: .08em
 }
@@ -835,7 +835,7 @@
 .applicationTools>span {
     margin-left: auto;
     color: #798078;
-    font-size: 11px
+    font-size: .75rem
 }
 
 .reviewButton {
@@ -861,13 +861,13 @@
 
 .reviewSummary a {
     color: #52665a;
-    font-size: 13px
+    font-size: .875rem
 }
 
 .reviewSummary time {
     margin-top: 5px;
     color: #7a827b;
-    font-size: 11px
+    font-size: .75rem
 }
 
 .reviewField {
@@ -881,7 +881,7 @@
 
 .reviewField strong {
     color: #4b564d;
-    font-size: 12px
+    font-size: .75rem
 }
 
 .reviewField p {
@@ -898,7 +898,7 @@
 }
 
 .reviewHistory h3 {
-    font: 500 19px Georgia, serif
+    font: 500 19px var(--font-display)
 }
 
 .reviewHistory>div {
@@ -908,13 +908,13 @@
     padding: 10px 12px;
     border-radius: 7px;
     background: #ece9df;
-    font-size: 12px
+    font-size: .75rem
 }
 
 .reviewHistory time,
 .reviewHistory p {
     color: #7a827b;
-    font-size: 11px
+    font-size: .75rem
 }
 
 .enquiryGrid article {
@@ -936,7 +936,7 @@
 }
 
 .enquiryGrid a {
-    font-size: 12px;
+    font-size: .75rem;
     color: #718073;
     margin-top: 4px
 }
@@ -950,11 +950,11 @@
 .enquiryGrid p {
     color: #59635c;
     line-height: 1.55;
-    font-size: 13px
+    font-size: .875rem
 }
 
 .enquiryGrid footer {
-    font-size: 11px;
+    font-size: .75rem;
     color: #8b918c
 }
 
@@ -978,7 +978,7 @@
 
 .staffPanel h2 {
     margin: 8px 0 12px;
-    font: 500 30px/1.15 Georgia, serif
+    font: 500 30px/1.15 var(--font-display)
 }
 
 .staffPanel>div>p:last-child {
@@ -999,7 +999,7 @@
 
 .staffPanel label {
     color: #4b564d;
-    font-size: 12px;
+    font-size: .8rem;
     font-weight: 700
 }
 
@@ -1062,7 +1062,7 @@
 
 .enrollment summary {
     cursor: pointer;
-    font-size: 13px
+    font-size: .875rem
 }
 
 .enrollment code {
@@ -1328,7 +1328,7 @@
 
     .topbar .eyebrow {
         overflow: hidden;
-        font-size: 9px;
+        font-size: var(--text-xs);
         text-overflow: ellipsis;
         white-space: nowrap
     }
@@ -1500,7 +1500,7 @@
         display: block;
         grid-column: 2;
         grid-row: 3;
-        font-size: 11px
+        font-size: .75rem
     }
 
     .notificationTable i {
@@ -1511,7 +1511,7 @@
     .notificationTable time {
         grid-column: 1;
         color: #717a73;
-        font-size: 11px
+        font-size: .75rem
     }
 
     .subnav {

@@ -34,6 +34,14 @@
   --font-body:      'Outfit', system-ui, sans-serif;
   --font-italic:    'Libre Baskerville', Georgia, serif;
 
+  /* Professional type scale */
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-md:   1.0625rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+
   /* Spacing Scale */
   --space-xs:  4px;
   --space-sm:  8px;
@@ -86,9 +94,11 @@ html {
 
 body {
   font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 400;
   background-color: var(--color-bg);
   color: var(--color-text);
-  line-height: 1.6;
+  line-height: 1.65;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -109,7 +119,7 @@ img, video { max-width: 100%; display: block; }
 a { text-decoration: none; color: inherit; }
 button { cursor: pointer; border: none; background: none; font-family: inherit; }
 ul, ol { list-style: none; }
-input, textarea, select { font-family: inherit; }
+input, textarea, select, button { font: inherit; }
 
 /* Focus styles */
 :focus-visible {
@@ -126,48 +136,49 @@ input, textarea, select { font-family: inherit; }
 /* ── Typography ────────────────────────────────────────────── */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
-  font-weight: 400;
-  line-height: 1.1;
+  font-weight: 500;
+  line-height: 1.12;
+  text-wrap: balance;
   color: var(--gm-deep);
 }
 
 .display-xl {
-  font-size: clamp(3.5rem, 7vw, 8rem);
-  font-weight: 300;
-  letter-spacing: -0.02em;
-  line-height: 1.0;
+  font-size: clamp(3rem, 6vw, 6.75rem);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 0.98;
 }
 .display-lg {
-  font-size: clamp(2.8rem, 5.5vw, 6rem);
-  font-weight: 300;
-  line-height: 1.05;
+  font-size: clamp(2.5rem, 4.8vw, 5rem);
+  font-weight: 400;
+  line-height: 1.02;
 }
 .display-md {
-  font-size: clamp(2rem, 4vw, 4rem);
-  font-weight: 300;
-  line-height: 1.1;
+  font-size: clamp(2rem, 3.5vw, 3.5rem);
+  font-weight: 400;
+  line-height: 1.08;
 }
 .display-sm {
-  font-size: clamp(1.5rem, 2.5vw, 2.4rem);
-  font-weight: 400;
+  font-size: clamp(1.5rem, 2.25vw, 2.25rem);
+  font-weight: 500;
   line-height: 1.2;
 }
 .label-text {
   font-family: var(--font-body);
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--gm-gold);
 }
 .body-lg {
-  font-size: 1.05rem;
-  line-height: 1.8;
+  font-size: var(--text-md);
+  line-height: 1.75;
   color: var(--gm-earth);
 }
 .body-sm {
-  font-size: 0.875rem;
-  line-height: 1.75;
+  font-size: var(--text-sm);
+  line-height: 1.7;
   color: var(--gm-earth);
 }
 
@@ -216,5 +227,12 @@ h1, h2, h3, h4, h5, h6 {
     --space-3xl: 64px;
     --space-2xl: 48px;
     --nav-height: 68px;
+  }
+
+  /* A 16px control size keeps forms readable and prevents mobile browser zoom. */
+  input,
+  textarea,
+  select {
+    font-size: 1rem !important;
   }
 }
