@@ -50,6 +50,8 @@ export default function AcademyProgram() {
         description={program.seoDescription || program.summary}
         path={`/pathfinder-academy/programs/${program.slug}`}
         image={heroUrl || undefined}
+        type="article"
+        structuredData={programSchema(program, heroUrl)}
       />
       <section className={styles.detailHero}>
         {heroUrl && <img src={heroUrl} alt="" />}
@@ -229,7 +231,7 @@ function ApplicationPanel({ program }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const deadlinePassed = program.applicationDeadline
-    ? new Date(program.applicationDeadline).getTime() < Date.now()
+    ? new Date(`${program.applicationDeadline}T23:59:59.999`).getTime() < Date.now()
     : false;
   const internalOpen = program.internalApplicationsEnabled && !deadlinePassed;
 
@@ -295,7 +297,7 @@ function ApplicationPanel({ program }) {
             </a>
           )}
         </div>
-        <div className={styles.applicationCard}>
+        <div className={styles.applicationCard} aria-live="polite" aria-busy={busy}>
           {session === undefined || (session && existing === undefined) ? (
             <p>Checking your account…</p>
           ) : session && existing ? (
@@ -323,6 +325,7 @@ function ApplicationPanel({ program }) {
                 <input
                   required
                   minLength="2"
+                  autoComplete="name"
                   value={form.fullName}
                   onChange={(e) =>
                     setForm({ ...form, fullName: e.target.value })
@@ -333,6 +336,8 @@ function ApplicationPanel({ program }) {
                 <label>
                   Phone
                   <input
+                    type="tel"
+                    autoComplete="tel"
                     value={form.phone}
                     onChange={(e) =>
                       setForm({ ...form, phone: e.target.value })
@@ -342,6 +347,7 @@ function ApplicationPanel({ program }) {
                 <label>
                   Organization
                   <input
+                    autoComplete="organization"
                     value={form.organization}
                     onChange={(e) =>
                       setForm({ ...form, organization: e.target.value })
@@ -353,6 +359,7 @@ function ApplicationPanel({ program }) {
                 Professional or educational background
                 <textarea
                   rows="4"
+                  maxLength="2000"
                   value={form.background}
                   onChange={(e) =>
                     setForm({ ...form, background: e.target.value })
@@ -364,6 +371,7 @@ function ApplicationPanel({ program }) {
                 <textarea
                   required
                   minLength="20"
+                  maxLength="4000"
                   rows="6"
                   value={form.motivation}
                   onChange={(e) =>
@@ -382,6 +390,7 @@ function ApplicationPanel({ program }) {
                 </p>
               )}
               <button
+                type="submit"
                 className="btn btn-primary"
                 disabled={busy || Boolean(message)}
               >
@@ -454,4 +463,29 @@ function formatDate(value) {
     month: "long",
     day: "numeric",
   });
+}
+
+function programSchema(program, image) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    name: program.title,
+    description: program.seoDescription || program.summary,
+    url: `https://grainmuse.net/pathfinder-academy/programs/${program.slug}`,
+    image: image || undefined,
+    provider: {
+      "@type": "EducationalOrganization",
+      name: "PATHFINDER Academy",
+      url: "https://grainmuse.net/pathfinder-academy",
+    },
+    hasCourseInstance: {
+      "@type": "CourseInstance",
+      courseMode: program.deliveryMode || undefined,
+      startDate: program.startDate || undefined,
+      endDate: program.endDate || undefined,
+      location: program.venue
+        ? { "@type": "Place", name: program.venue }
+        : undefined,
+    },
+  };
 }

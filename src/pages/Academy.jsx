@@ -22,6 +22,18 @@ export default function Academy() {
         title="PATHFINDER Academy"
         description="Explore PATHFINDER Academy programs, learn from experienced resource persons, and apply for upcoming learning opportunities."
         path="/pathfinder-academy"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "EducationalOrganization",
+          name: "PATHFINDER Academy",
+          url: "https://grainmuse.net/pathfinder-academy",
+          description: "Practical learning programs led by experienced professionals.",
+          parentOrganization: {
+            "@type": "Organization",
+            name: "Grain Muse",
+            url: "https://grainmuse.net",
+          },
+        }}
       />
       <PageHero
         eyebrow="Learn · Connect · Progress"

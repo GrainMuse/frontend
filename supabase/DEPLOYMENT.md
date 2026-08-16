@@ -140,3 +140,6 @@ Use a separate production project and production-only secrets. Repeat migration
 dry-run and migration-list checks. Keep the browser-direct EmailJS fallback only
 until the production function health check succeeds, then switch the frontend
 variable to `supabase`. Reverting that one variable is the contact-path rollback.
+
+Complete `ACADEMY_LAUNCH_CHECKLIST.md` before administrators enter final academy
+content or the PATHFINDER routes are announced publicly.

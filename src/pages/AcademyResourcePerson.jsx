@@ -30,6 +30,24 @@ export default function AcademyResourcePerson() {
         description={person.shortBiography}
         path={`/pathfinder-academy/resource-persons/${person.slug}`}
         image={image || undefined}
+        type="profile"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "Person",
+          name: person.name,
+          jobTitle: person.professionalTitle,
+          description: person.shortBiography,
+          image: image || undefined,
+          url: `https://grainmuse.net/pathfinder-academy/resource-persons/${person.slug}`,
+          worksFor: person.organization
+            ? { "@type": "Organization", name: person.organization }
+            : undefined,
+          affiliation: {
+            "@type": "EducationalOrganization",
+            name: "PATHFINDER Academy",
+          },
+          sameAs: person.linkedinUrl ? [person.linkedinUrl] : undefined,
+        }}
       />
       <section className={`section-pad ${styles.profileSection}`}>
         <div className={`container ${styles.profileGrid}`}>
@@ -58,7 +76,7 @@ export default function AcademyResourcePerson() {
                   <p key={item}>{item}</p>
                 ))}
             </div>
-            {person.expertise.length > 0 && (
+            {person.expertise?.length > 0 && (
               <div className={styles.tags}>
                 {person.expertise.map((item) => (
                   <span className="tag" key={item}>

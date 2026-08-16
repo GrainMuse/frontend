@@ -12,6 +12,11 @@
     font-family: Inter, Arial, sans-serif
 }
 
+.adminShell {
+    width: 100%;
+    overflow-x: hidden
+}
+
 .boot,
 .denied {
     display: grid;
@@ -118,7 +123,8 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    cursor: pointer
+    cursor: pointer;
+    min-height: 44px
 }
 
 .primary {
@@ -252,7 +258,8 @@
     gap: 12px;
     align-items: center;
     text-align: left;
-    cursor: pointer
+    cursor: pointer;
+    min-height: 44px
 }
 
 .sidebar nav button:hover,
@@ -291,7 +298,15 @@
     border: 0;
     background: none;
     color: #aeb9af;
-    cursor: pointer
+    cursor: pointer;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center
+}
+
+.sidebarBackdrop {
+    display: none
 }
 
 .workspace {
@@ -324,7 +339,14 @@
 .mobileMenu {
     display: none;
     border: 0;
-    background: none
+    background: none;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    place-items: center;
+    border-radius: 8px;
+    color: #304735;
+    cursor: pointer
 }
 
 .notice {
@@ -1192,5 +1214,400 @@
 
     .welcome h2 {
         font-size: 30px
+    }
+}
+
+/* Mobile admin workspace */
+@media(max-width:900px) {
+    .sidebar {
+        z-index: 40;
+        width: min(300px, 86vw);
+        height: 100dvh;
+        padding: 22px 16px;
+        overflow-y: auto;
+        visibility: hidden;
+        pointer-events: none;
+        box-shadow: 18px 0 45px #10201740
+    }
+
+    .sidebar.open {
+        visibility: visible;
+        pointer-events: auto
+    }
+
+    .sidebarBackdrop {
+        position: fixed;
+        z-index: 30;
+        inset: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        border: 0;
+        background: #17221cb3;
+        cursor: pointer
+    }
+
+    .mobileMenu {
+        display: grid
+    }
+
+    .workspace {
+        width: 100%;
+        min-width: 0
+    }
+
+    .topbar {
+        position: sticky;
+        z-index: 8;
+        top: 0;
+        height: 84px;
+        background: #f5f3ecf2;
+        backdrop-filter: blur(10px)
+    }
+
+    .notice {
+        z-index: 60;
+        top: auto;
+        bottom: max(12px, env(safe-area-inset-bottom));
+        right: 12px;
+        left: 12px;
+        width: auto;
+        justify-content: space-between;
+        text-align: left
+    }
+
+    .subnav {
+        margin-right: -18px;
+        margin-left: -18px;
+        padding: 0 18px 8px;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        scrollbar-width: thin;
+        scroll-snap-type: inline proximity
+    }
+
+    .subnav button {
+        min-height: 44px;
+        flex: 0 0 auto;
+        scroll-snap-align: start;
+        white-space: nowrap
+    }
+
+    .drawer {
+        height: 100dvh;
+        max-height: 100dvh
+    }
+
+    .formBody {
+        overscroll-behavior: contain
+    }
+}
+
+@media(max-width:560px) {
+    .workspace {
+        padding: 0 12px 28px
+    }
+
+    .topbar {
+        gap: 9px;
+        height: 76px
+    }
+
+    .topbar>div {
+        min-width: 0
+    }
+
+    .topbar h1 {
+        margin: 2px 0;
+        overflow: hidden;
+        font-size: 24px;
+        text-overflow: ellipsis;
+        white-space: nowrap
+    }
+
+    .topbar .eyebrow {
+        overflow: hidden;
+        font-size: 9px;
+        text-overflow: ellipsis;
+        white-space: nowrap
+    }
+
+    .dashboard {
+        gap: 16px;
+        padding-top: 18px
+    }
+
+    .welcome {
+        min-height: 0;
+        padding: 24px 20px
+    }
+
+    .welcome h2 {
+        font-size: 29px;
+        line-height: 1.08
+    }
+
+    .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px
+    }
+
+    .stats article {
+        min-width: 0;
+        padding: 16px;
+        gap: 9px
+    }
+
+    .stats strong {
+        font-size: 29px
+    }
+
+    .recent>header,
+    .manager>header {
+        padding: 16px
+    }
+
+    .recent>header {
+        gap: 12px
+    }
+
+    .recent>div {
+        grid-template-columns: 16px minmax(0, 1fr) auto;
+        gap: 9px;
+        padding: 14px 16px
+    }
+
+    .recent>div>span:nth-of-type(2) {
+        display: none
+    }
+
+    .manager {
+        margin-top: 18px;
+        overflow: visible;
+        border: 0;
+        background: transparent
+    }
+
+    .manager>header {
+        border: 1px solid #e1dfd7;
+        border-radius: 11px;
+        background: #fff
+    }
+
+    .manager>header .primary,
+    .applicationTools select,
+    .applicationTools .secondary {
+        width: 100%
+    }
+
+    .table {
+        display: grid;
+        gap: 10px;
+        margin-top: 12px
+    }
+
+    .tableRow {
+        min-height: 0;
+        margin: 0;
+        padding: 16px;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px 12px;
+        border: 1px solid #e1dfd7;
+        border-radius: 10px;
+        background: #fff
+    }
+
+    .tableRow>span {
+        display: none !important
+    }
+
+    .tableRow>i {
+        grid-column: 1;
+        width: max-content
+    }
+
+    .tableRow>div {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        display: flex;
+        align-self: center
+    }
+
+    .tableRow>div button,
+    .iconButton {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center
+    }
+
+    .enquiryGrid {
+        padding: 12px 0;
+        background: transparent
+    }
+
+    .enquiryGrid article {
+        min-width: 0;
+        padding: 16px
+    }
+
+    .enquiryGrid article header {
+        align-items: stretch;
+        flex-direction: column
+    }
+
+    .enquiryGrid article select {
+        width: 100%;
+        min-height: 44px;
+        padding: 0 10px
+    }
+
+    .enquiryGrid article footer {
+        align-items: flex-start;
+        flex-wrap: wrap
+    }
+
+    .applicationTools {
+        margin-top: 12px;
+        padding: 14px;
+        border: 1px solid #e1dfd7;
+        border-radius: 10px
+    }
+
+    .notificationTable {
+        display: grid;
+        gap: 10px;
+        margin-top: 12px
+    }
+
+    .notificationTable>div {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px 12px;
+        padding: 16px;
+        border: 1px solid #e1dfd7;
+        border-radius: 10px;
+        background: #fff
+    }
+
+    .notificationTable>div>span:first-of-type {
+        display: block;
+        grid-column: 1 / -1;
+        overflow-wrap: anywhere
+    }
+
+    .notificationTable>div>span:nth-of-type(2) {
+        display: block;
+        grid-column: 2;
+        grid-row: 3;
+        font-size: 11px
+    }
+
+    .notificationTable i {
+        grid-column: 2;
+        grid-row: 1
+    }
+
+    .notificationTable time {
+        grid-column: 1;
+        color: #717a73;
+        font-size: 11px
+    }
+
+    .subnav {
+        margin-right: -12px;
+        margin-left: -12px;
+        padding-right: 12px;
+        padding-left: 12px
+    }
+
+    .staffPanel {
+        margin-top: 18px;
+        padding: 22px 18px
+    }
+
+    .drawer,
+    .wideDrawer {
+        width: 100%;
+        border-radius: 0;
+        box-shadow: none
+    }
+
+    .drawer>header,
+    .drawer>footer {
+        padding: 16px
+    }
+
+    .drawer>header {
+        min-height: 72px
+    }
+
+    .drawer>footer {
+        gap: 10px;
+        padding-bottom: max(16px, env(safe-area-inset-bottom))
+    }
+
+    .drawer>footer .primary,
+    .drawer>footer .secondary {
+        flex: 1
+    }
+
+    .drawer h2 {
+        font-size: 23px
+    }
+
+    .formBody {
+        padding: 18px 16px
+    }
+
+    .assignmentDetails {
+        padding-left: 12px
+    }
+
+    .reviewHistory>div {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px
+    }
+
+    .loginPanel {
+        max-width: none;
+        padding: 28px 22px
+    }
+
+    .login h1 {
+        font-size: 40px
+    }
+
+    .denied,
+    .boot {
+        padding: 24px
+    }
+
+    .mfaForm {
+        width: min(100%, 320px);
+        margin: auto;
+        flex-direction: column
+    }
+
+    .mfaForm input {
+        width: 100%;
+        min-height: 52px
+    }
+
+    .enrollment img {
+        width: min(220px, 70vw);
+        height: auto;
+        aspect-ratio: 1
+    }
+}
+
+@media(max-width:360px) {
+    .stats {
+        grid-template-columns: 1fr
+    }
+
+    .topbar h1 {
+        font-size: 21px
     }
 }
