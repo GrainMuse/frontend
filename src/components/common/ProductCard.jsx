@@ -1,5 +1,6 @@
 import styles from "./ProductCard.module.css";
 import { getProductImage } from "../../images/imageRegistry";
+import ProgressiveImage from "../ui/ProgressiveImage";
 
 export default function ProductCard({
   product,
@@ -43,18 +44,17 @@ function ProductImage({ slug, alt }) {
   const altText = alt || `${slug.replace(/-/g, " ")} product image`;
 
   return (
-    <img
+    <ProgressiveImage
       src={imgUrl}
       alt={altText}
       style={{
+        width: "100%",
         height: "100%",
         position: "relative",
         objectFit: "cover",
         display: "block",
         borderRadius: "12px",
       }}
-      loading="lazy"
-      decoding="async"
     />
   );
 }

@@ -12,6 +12,41 @@ const EMPTY_CONTENT = Object.freeze({
   processSteps: [],
 });
 
+const RETRY_DELAYS_MS = [400, 1200];
+const CONTENT_REQUEST_TIMEOUT_MS = 5000;
+
+function wait(milliseconds) {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
+}
+
+async function fetchContentWithRetry({ force = false } = {}) {
+  let lastError;
+
+  for (let attempt = 0; attempt <= RETRY_DELAYS_MS.length; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(
+      () => controller.abort(),
+      CONTENT_REQUEST_TIMEOUT_MS,
+    );
+
+    try {
+      return await fetchPublicContent({
+        force: force || attempt > 0,
+        signal: controller.signal,
+      });
+    } catch (error) {
+      lastError = error;
+      if (attempt < RETRY_DELAYS_MS.length) {
+        await wait(RETRY_DELAYS_MS[attempt]);
+      }
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  throw lastError;
+}
+
 export function ContentProvider({ children }) {
   const [content, setContent] = useState(EMPTY_CONTENT);
   const [loading, setLoading] = useState(true);
@@ -21,7 +56,7 @@ export function ContentProvider({ children }) {
     setLoading(true);
     setError(null);
     try {
-      setContent(await fetchPublicContent({ force: true }));
+      setContent(await fetchContentWithRetry({ force: true }));
     } catch {
       setError("We could not load the latest site content. Please try again.");
     } finally {
@@ -31,7 +66,7 @@ export function ContentProvider({ children }) {
 
   useEffect(() => {
     let active = true;
-    fetchPublicContent()
+    fetchContentWithRetry()
       .then((nextContent) => {
         if (active) setContent(nextContent);
       })

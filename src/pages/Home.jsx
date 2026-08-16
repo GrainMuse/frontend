@@ -8,6 +8,8 @@ import AnimatedCounter from "../components/ui/AnimatedCounter";
 import { useContent } from "../context/contentStore";
 import { getHeroImage } from "../images/imageRegistry";
 import SEOHead from "../components/common/SEOHead";
+import LoadingSkeleton from "../components/ui/LoadingSkeleton";
+import ProgressiveImage from "../components/ui/ProgressiveImage";
 import styles from "./Home.module.css";
 import { useState } from "react";
 
@@ -164,6 +166,13 @@ export default function Home() {
                 subtitle="At Grain Muse, we believe that convenience should never come at the cost of quality. Every product begins with carefully sourced ingredients, whole grains, hand-picked herbs, and natural seasonings that honour tradition."
               />
               <div className={styles.valuesGrid}>
+                {contentLoading && (
+                  <LoadingSkeleton
+                    variant="lines"
+                    count={4}
+                    label="Loading company values"
+                  />
+                )}
                 {values.map((v) => (
                   <div key={v.title} className={`${styles.valueItem} sr`}>
                     <span className={styles.valueIcon}>{v.icon}</span>
@@ -232,7 +241,13 @@ export default function Home() {
           </div>
 
           <div className={styles.productsGrid}>
-            {contentLoading && <p role="status">Loading products…</p>}
+            {contentLoading && (
+              <LoadingSkeleton
+                count={3}
+                dark
+                label="Loading featured products"
+              />
+            )}
             {contentError && <p role="alert">{contentError}</p>}
             {displayProducts?.map((p, i) => (
               <ProductCard key={p.id} product={p} dark index={i} />
@@ -609,12 +624,11 @@ function LogoImage({ slug, alt, className }) {
   const altText = alt || `${slug.replace(/-/g, " ")} product image`;
 
   return (
-    <img
+    <ProgressiveImage
       src={imgUrl}
       alt={altText}
       className={className}
-      loading="lazy"
-      decoding="async"
+      eager
     />
   );
 }
