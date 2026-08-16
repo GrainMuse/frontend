@@ -168,7 +168,11 @@ function MemberCard({ member, index, onClick }) {
     >
       {/* Avatar */}
       <div className={styles.cardAvatar}>
-        <TeamMemberPhoto slug={member.slug} name={member.name} />
+        <TeamMemberPhoto
+          path={member.imagePath || member.slug}
+          fallbackSlug={member.slug}
+          name={member.name}
+        />
       </div>
 
       {/* Info */}
@@ -248,7 +252,8 @@ function MemberModal({ member, onClose }) {
             <div className={styles.modalAvatar}>
               {member.slug ? (
                 <TeamMemberPhoto
-                  slug={member.slug}
+                  path={member.imagePath || member.slug}
+                  fallbackSlug={member.slug}
                   name={member.name}
                 />
               ) : (
@@ -321,11 +326,12 @@ function MemberModal({ member, onClose }) {
   );
 }
 
-function TeamMemberPhoto({ slug, name }) {
-  const imgUrl = getTeamImage(slug);
+function TeamMemberPhoto({ path, fallbackSlug, name }) {
+  const imgUrl = getTeamImage(path);
   return (
     <ProgressiveImage
       src={imgUrl}
+      fallbackSrc={getTeamImage(fallbackSlug)}
       alt={`${name} — Grain Muse team`}
       style={{
         width: "100%",

@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pencil, Plus, Search, Trash2, UserPlus, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { EMPTY_RECORDS } from "./config";
+import { removeSiteImage, uploadSiteImage } from "../../services/mediaService";
 import styles from "../../pages/Admin.module.css";
 
 export function StaffInvites({ onSent }) {
@@ -82,11 +83,29 @@ export function StaffInvites({ onSent }) {
 
 export function RecordForm({ type, initial, categories, onClose, onSave }) {
   const [form, setForm] = useState(initial ?? EMPTY_RECORDS[type]);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
+  const [removeImage, setRemoveImage] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const set = (key, value) =>
     setForm((current) => ({ ...current, [key]: value }));
+
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreview("");
+      return undefined;
+    }
+    const objectUrl = URL.createObjectURL(imageFile);
+    setImagePreview(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [imageFile]);
+
   async function submit(event) {
     event.preventDefault();
+    setBusy(true);
+    setError("");
+    let uploadedPath = null;
     try {
       const payload = { ...form };
       if (type === "content" && typeof payload.value === "string")
@@ -97,14 +116,39 @@ export function RecordForm({ type, initial, categories, onClose, onSave }) {
         !payload.publishedAt
       )
         payload.publishedAt = new Date().toISOString();
+
+      if (["products", "team"].includes(type)) {
+        if (imageFile) {
+          uploadedPath = await uploadSiteImage(
+            imageFile,
+            type === "products" ? "products" : "team",
+            payload.slug,
+          );
+          payload.imagePath = uploadedPath;
+        } else if (removeImage) {
+          payload.imagePath = null;
+        }
+      }
+
       await onSave(payload);
+
+      if (
+        initial?.imagePath &&
+        initial.imagePath !== payload.imagePath &&
+        (uploadedPath || removeImage)
+      ) {
+        await removeSiteImage(initial.imagePath).catch(() => undefined);
+      }
       onClose();
     } catch (submitError) {
+      if (uploadedPath) await removeSiteImage(uploadedPath).catch(() => undefined);
       setError(
         submitError instanceof SyntaxError
           ? "Content must be valid JSON."
           : submitError.message,
       );
+    } finally {
+      setBusy(false);
     }
   }
   const title =
@@ -228,14 +272,48 @@ export function RecordForm({ type, initial, categories, onClose, onSave }) {
                 </div>
               )}
               {type !== "categories" && (
-                <label>
-                  {type === "team" ? "Biography" : "Description"}
-                  <textarea
-                    rows="6"
-                    value={form.desc || ""}
-                    onChange={(e) => set("desc", e.target.value)}
-                  />
-                </label>
+                <>
+                  <label>
+                    {type === "team" ? "Biography" : "Description"}
+                    <textarea
+                      rows="6"
+                      value={form.desc || ""}
+                      onChange={(e) => set("desc", e.target.value)}
+                    />
+                  </label>
+                  <div className={styles.mediaField}>
+                    <label>
+                      {type === "team" ? "Team photo" : "Product image"}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/avif"
+                        onChange={(event) => {
+                          setImageFile(event.target.files?.[0] ?? null);
+                          setRemoveImage(false);
+                        }}
+                      />
+                    </label>
+                    {imagePreview && (
+                      <img src={imagePreview} alt="Selected upload preview" />
+                    )}
+                    {!imagePreview && initial?.imagePath && !removeImage && (
+                      <p>Current image: {initial.imagePath}</p>
+                    )}
+                    {(initial?.imagePath || imageFile) && !removeImage && (
+                      <button
+                        type="button"
+                        className={styles.mediaRemove}
+                        onClick={() => {
+                          setImageFile(null);
+                          setRemoveImage(true);
+                        }}
+                      >
+                        Remove image
+                      </button>
+                    )}
+                    <small>JPEG, PNG, WebP, or AVIF. Maximum 5 MB.</small>
+                  </div>
+                </>
               )}
             </>
           )}
@@ -273,7 +351,9 @@ export function RecordForm({ type, initial, categories, onClose, onSave }) {
           <button type="button" className={styles.secondary} onClick={onClose}>
             Cancel
           </button>
-          <button className={styles.primary}>Save record</button>
+          <button className={styles.primary} disabled={busy}>
+            {busy ? "Saving and uploading…" : "Save record"}
+          </button>
         </footer>
       </form>
     </div>

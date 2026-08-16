@@ -150,6 +150,22 @@ categories, products, and team members. Public sessions can only read published 
 Writes require an authenticated active staff account with an `aal2` MFA session, as
 enforced by RLS in PostgreSQL—not by hiding controls in React.
 
+## Public media storage and CDN
+
+Product images, team photos, and branding assets can be stored in the public
+`site-media` Storage bucket and are delivered through Supabase's built-in CDN.
+Database `image_path` values store portable object paths such as
+`products/hibiscus-tea-<version>.webp`, never project-specific public URLs.
+
+Public users may read these assets. Upload, replacement, and deletion require an
+active staff account with an `aal2` MFA session. The bucket accepts JPEG, PNG,
+WebP, and AVIF files up to 5 MB. The admin record editor uploads a uniquely named
+object before saving the new path and removes replaced objects after a successful
+database update. Existing repository images remain as a compatibility fallback
+if the CDN is temporarily unavailable. The Supabase deployment workflows upload
+all repository product, team, hero, and logo images after applying the bucket
+migration; the migration changes seeded records to the matching object paths.
+
 Apply pending content migrations locally without resetting existing data:
 
 ```bash

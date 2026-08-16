@@ -60,6 +60,11 @@ the frontend API that calls `get_admin_invitation_for_email` and
 `record_admin_invitation`. Configure `ADMIN_INVITE_EXPIRY_SECONDS` on the frontend
 host to match Supabase Auth's Email OTP Expiration value.
 
+Confirm the `site-media` bucket appears under Storage after migrations are
+applied. Test one upload while signed in as an MFA-verified staff member, verify
+the resulting public URL loads without authentication, and confirm an anonymous
+upload is rejected.
+
 ## 4. Configure Edge Function secrets
 
 Set these in the staging project's Edge Function Secrets settings:

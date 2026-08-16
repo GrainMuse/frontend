@@ -621,11 +621,13 @@ function AboutVisual() {
 
 function LogoImage({ slug, alt, className }) {
   const imgUrl = getHeroImage(slug);
-  const altText = alt || `${slug.replace(/-/g, " ")} product image`;
+  const fallbackKey = slug?.split("/").pop()?.replace(/\.[^.]+$/, "");
+  const altText = alt || "Grain Muse logo";
 
   return (
     <ProgressiveImage
       src={imgUrl}
+      fallbackSrc={getHeroImage(fallbackKey)}
       alt={altText}
       className={className}
       eager

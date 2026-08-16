@@ -117,7 +117,8 @@ export default function Navbar() {
 
 function LogoImage({ slug, alt, className }) {
   const imgUrl = getHeroImage(slug);
-  const altText = alt || `${slug.replace(/-/g, " ")} product image`;
+  const fallbackKey = slug?.split("/").pop()?.replace(/\.[^.]+$/, "");
+  const altText = alt || "Grain Muse logo";
 
   return (
     <img
@@ -126,6 +127,12 @@ function LogoImage({ slug, alt, className }) {
       className={className}
       loading="lazy"
       decoding="async"
+      onError={(event) => {
+        const fallback = getHeroImage(fallbackKey);
+        if (fallback && event.currentTarget.src !== fallback) {
+          event.currentTarget.src = fallback;
+        }
+      }}
     />
   );
 }

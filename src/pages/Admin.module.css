@@ -596,6 +596,40 @@
     gap: 15px
 }
 
+.mediaField {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid #dedbd0;
+    border-radius: 8px;
+    background: #fff
+}
+
+.mediaField img {
+    width: 100%;
+    max-height: 220px;
+    object-fit: contain;
+    border-radius: 7px;
+    background: #f1eee5
+}
+
+.mediaField p,
+.mediaField small {
+    margin: 0;
+    color: #69736b;
+    overflow-wrap: anywhere
+}
+
+.mediaRemove {
+    justify-self: start;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: #a0584f;
+    font-weight: 700;
+    cursor: pointer
+}
+
 .enquiryGrid {
     padding: 20px;
     display: grid;

@@ -1,3 +1,5 @@
+import { resolveMediaUrl } from '../services/mediaService';
+
 const productImageModules = import.meta.glob(
   '../images/products/*.(jpg|jpeg|png|webp|avif|svg)',
   { eager: true }
@@ -47,7 +49,7 @@ export const HERO_IMAGE_MAP    = buildImageMap(heroImageModules);
  * @returns {string|null}
  */
 export function getProductImage(slug) {
-  return PRODUCT_IMAGE_MAP[slug] ?? null;
+  return resolveMediaUrl(slug, PRODUCT_IMAGE_MAP);
 }
 
 /**
@@ -58,7 +60,7 @@ export function getProductImage(slug) {
  * @returns {string|null}
  */
 export function getTeamImage(slug) {
-  return TEAM_IMAGE_MAP[slug] ?? null;
+  return resolveMediaUrl(slug, TEAM_IMAGE_MAP);
 }
 
 /**
@@ -68,5 +70,5 @@ export function getTeamImage(slug) {
  * @returns {string|null}
  */
 export function getHeroImage(key) {
-  return HERO_IMAGE_MAP[key] ?? null;
+  return resolveMediaUrl(key, HERO_IMAGE_MAP);
 }
