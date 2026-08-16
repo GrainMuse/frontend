@@ -257,10 +257,28 @@ test.describe.serial("admin portal", () => {
   });
 
   test("renders a published academy program and accepts a signed-in internal application", async ({ page }) => {
+    await page.goto(`/pathfinder-academy/resource-persons/e2e-resource-${runId}`);
+    await expect(page.getByRole("heading", { name: `E2E Resource ${runId}`, exact: true })).toBeVisible();
+    const personSchema = JSON.parse(
+      await page.locator('script[type="application/ld+json"]').textContent(),
+    );
+    expect(personSchema["@type"]).toBe("Person");
+    expect(personSchema.name).toBe(`E2E Resource ${runId}`);
+    await expect(page.locator('meta[property="og:type"]')).toHaveAttribute("content", "profile");
+
     await page.goto(`/pathfinder-academy/programs/e2e-academy-${runId}`);
     await expect(page.getByRole("heading", { name: `E2E Academy ${runId}`, exact: true })).toBeVisible();
     await expect(page.getByText(`E2E Resource ${runId}`, { exact: true })).toBeVisible();
     await expect(page.getByRole("link", { name: /Open external form/ })).toHaveAttribute("href", "https://example.com/pathfinder-application");
+    const courseSchema = JSON.parse(
+      await page.locator('script[type="application/ld+json"]').textContent(),
+    );
+    expect(courseSchema["@type"]).toBe("Course");
+    expect(courseSchema.provider.name).toBe("PATHFINDER Academy");
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      "href",
+      `https://grainmuse.net/pathfinder-academy/programs/e2e-academy-${runId}`,
+    );
 
     await page.getByLabel("Email").fill(applicantEmail);
     await page.getByLabel("Password").fill(password);
@@ -271,6 +289,7 @@ test.describe.serial("admin portal", () => {
     await page.getByRole("button", { name: "Submit application" }).click();
     await expect(page.getByText("Your application has been submitted successfully.")).toBeVisible();
     await page.getByRole("link", { name: "View my applications" }).click();
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex,nofollow");
     const myApplication = page.locator("article").filter({ hasText: `E2E Academy ${runId}` });
     await expect(myApplication).toBeVisible();
     page.once("dialog", (dialog) => dialog.accept());
@@ -279,6 +298,7 @@ test.describe.serial("admin portal", () => {
   });
 
   test("triages enquiries and requires TOTP on the next login", async ({ page }) => {
+    test.setTimeout(90_000);
     await signIn(page, adminEmail);
     await expect(page.getByRole("heading", { name: "Verify it’s you" })).toBeVisible();
     await page.getByLabel("Authenticator code").fill("000000");
@@ -314,5 +334,30 @@ test.describe.serial("admin portal", () => {
     await expect(card).toBeVisible();
     await card.locator("select").selectOption("resolved");
     await expect(card.locator("select")).toHaveValue("resolved");
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    const mobileMenu = page.getByRole("button", { name: "Open admin navigation" });
+    await expect(mobileMenu).toBeVisible();
+    await mobileMenu.click();
+    const mobileNavigation = page.locator("#admin-navigation");
+    await expect(mobileNavigation).toBeVisible();
+    await expect(page.getByRole("button", { name: "Close admin navigation" }).first()).toBeVisible();
+    await mobileNavigation.getByRole("button", { name: "Products" }).click();
+    await expect(mobileNavigation).toBeHidden();
+    await page.getByRole("button", { name: "Add record" }).click();
+    const mobileDrawer = page.locator("form").filter({
+      has: page.getByRole("heading", { name: "product", exact: true }),
+    });
+    const drawerBounds = await mobileDrawer.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { left: rect.left, right: rect.right, width: rect.width };
+    });
+    expect(drawerBounds.left).toBe(0);
+    expect(drawerBounds.right).toBeLessThanOrEqual(390);
+    expect(drawerBounds.width).toBeLessThanOrEqual(390);
+    await page.getByRole("button", { name: "Close", exact: true }).click();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBeTruthy();
   });
 });

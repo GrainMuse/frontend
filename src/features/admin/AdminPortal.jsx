@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
 import { supabase } from "../../lib/supabase";
@@ -30,6 +30,20 @@ export function AdminPortal() {
   const [notice, setNotice] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const type = sectionRecordType(section);
+
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [menuOpen]);
 
   const counts = useMemo(
     () =>
@@ -120,6 +134,14 @@ export function AdminPortal() {
 
   return (
     <div className={styles.adminShell}>
+      {menuOpen && (
+        <button
+          type="button"
+          className={styles.sidebarBackdrop}
+          aria-label="Close admin navigation"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
       <AdminSidebar
         section={section}
         onSection={selectSection}

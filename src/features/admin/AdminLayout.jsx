@@ -25,7 +25,11 @@ export function AdminSidebar({
   onSignOut,
 }) {
   return (
-    <aside className={`${styles.sidebar} ${menuOpen ? styles.open : ""}`}>
+    <aside
+      id="admin-navigation"
+      aria-label="Admin navigation"
+      className={`${styles.sidebar} ${menuOpen ? styles.open : ""}`}
+    >
       <div className={styles.brand}>
         <Leaf />
         <div>
@@ -74,8 +78,15 @@ export function AdminHeader({
   return (
     <>
       <header className={styles.topbar}>
-        <button className={styles.mobileMenu} onClick={() => onMenu(!menuOpen)}>
-          <Menu />
+        <button
+          type="button"
+          className={styles.mobileMenu}
+          aria-label={menuOpen ? "Close admin navigation" : "Open admin navigation"}
+          aria-controls="admin-navigation"
+          aria-expanded={menuOpen}
+          onClick={() => onMenu(!menuOpen)}
+        >
+          {menuOpen ? <X /> : <Menu />}
         </button>
         <div>
           <p className={styles.eyebrow}>OPERATIONS / {section.toUpperCase()}</p>
