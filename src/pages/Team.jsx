@@ -332,6 +332,7 @@ function TeamMemberPhoto({ path, fallbackSlug, name }) {
     <ProgressiveImage
       src={imgUrl}
       fallbackSrc={getTeamImage(fallbackSlug)}
+      eager
       alt={`${name} — Grain Muse team`}
       style={{
         width: "100%",

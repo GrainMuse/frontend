@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import styles from "./ProgressiveImage.module.css";
 
 export default function ProgressiveImage({
@@ -10,13 +10,12 @@ export default function ProgressiveImage({
   eager = false,
   fallbackSrc = null,
 }) {
-  const [loaded, setLoaded] = useState(false);
-  const [activeSrc, setActiveSrc] = useState(src);
-
-  useEffect(() => {
-    setActiveSrc(src);
-    setLoaded(false);
-  }, [src]);
+  const [loadedSource, setLoadedSource] = useState(null);
+  const [failedSource, setFailedSource] = useState(null);
+  const useFallback =
+    Boolean(fallbackSrc) && fallbackSrc !== src && failedSource === src;
+  const activeSrc = useFallback ? fallbackSrc : src;
+  const loaded = !activeSrc || loadedSource === activeSrc;
 
   return (
     <span className={`${styles.frame} ${frameClassName}`}>
@@ -28,13 +27,13 @@ export default function ProgressiveImage({
         style={style}
         loading={eager ? "eager" : "lazy"}
         decoding="async"
-        onLoad={() => setLoaded(true)}
+        onLoad={() => setLoadedSource(activeSrc)}
         onError={() => {
-          if (fallbackSrc && activeSrc !== fallbackSrc) {
-            setActiveSrc(fallbackSrc);
-            setLoaded(false);
+          if (fallbackSrc && activeSrc === src && fallbackSrc !== src) {
+            setFailedSource(src);
+            setLoadedSource(null);
           } else {
-            setLoaded(true);
+            setLoadedSource(activeSrc);
           }
         }}
       />
