@@ -3,6 +3,7 @@ import { Pencil, Plus, Search, Trash2, UserPlus, X } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { EMPTY_RECORDS } from "./config";
 import { removeSiteImage, uploadSiteImage } from "../../services/mediaService";
+import FormFieldLabel from "../../components/ui/FormFieldLabel";
 import styles from "../../pages/Admin.module.css";
 
 export function StaffInvites({ onSent }) {
@@ -50,7 +51,7 @@ export function StaffInvites({ onSent }) {
       </div>
       <form onSubmit={submit}>
         <label>
-          Email address
+          <FormFieldLabel required>Email address</FormFieldLabel>
           <input
             type="email"
             value={email}
@@ -59,8 +60,8 @@ export function StaffInvites({ onSent }) {
           />
         </label>
         <label>
-          Role
-          <select value={role} onChange={(e) => setRole(e.target.value)}>
+          <FormFieldLabel required>Role</FormFieldLabel>
+          <select required value={role} onChange={(e) => setRole(e.target.value)}>
             <option value="editor">Editor</option>
             <option value="admin">
               Administrator
@@ -183,7 +184,7 @@ export function RecordForm({ type, initial, categories, onClose, onSave }) {
           {type === "content" ? (
             <>
               <label>
-                Content key
+                <FormFieldLabel required>Content key</FormFieldLabel>
                 <input
                   value={form.key}
                   onChange={(e) => set("key", e.target.value)}
@@ -192,7 +193,7 @@ export function RecordForm({ type, initial, categories, onClose, onSave }) {
                 />
               </label>
               <label>
-                JSON value
+                <FormFieldLabel required>JSON value</FormFieldLabel>
                 <textarea
                   rows="14"
                   value={
@@ -209,7 +210,7 @@ export function RecordForm({ type, initial, categories, onClose, onSave }) {
             <>
               <div className={styles.formGrid}>
                 <label>
-                  Name
+                  <FormFieldLabel required>Name</FormFieldLabel>
                   <input
                     value={form.name}
                     onChange={(e) => set("name", e.target.value)}
@@ -217,7 +218,7 @@ export function RecordForm({ type, initial, categories, onClose, onSave }) {
                   />
                 </label>
                 <label>
-                  Slug
+                  <FormFieldLabel required>Slug</FormFieldLabel>
                   <input
                     value={form.slug}
                     onChange={(e) => set("slug", e.target.value)}
@@ -229,7 +230,7 @@ export function RecordForm({ type, initial, categories, onClose, onSave }) {
               {type === "products" && (
                 <>
                   <label>
-                    Category
+                    <FormFieldLabel required>Category</FormFieldLabel>
                     <select
                       value={form.categoryId}
                       onChange={(e) => set("categoryId", e.target.value)}
@@ -244,7 +245,7 @@ export function RecordForm({ type, initial, categories, onClose, onSave }) {
                     </select>
                   </label>
                   <label>
-                    Subtitle
+                    <FormFieldLabel>Subtitle</FormFieldLabel>
                     <input
                       value={form.subtitle || ""}
                       onChange={(e) => set("subtitle", e.target.value)}
@@ -255,7 +256,7 @@ export function RecordForm({ type, initial, categories, onClose, onSave }) {
               {type === "team" && (
                 <div className={styles.formGrid}>
                   <label>
-                    Position
+                    <FormFieldLabel required>Position</FormFieldLabel>
                     <input
                       value={form.position}
                       onChange={(e) => set("position", e.target.value)}
@@ -263,7 +264,7 @@ export function RecordForm({ type, initial, categories, onClose, onSave }) {
                     />
                   </label>
                   <label>
-                    Department
+                    <FormFieldLabel>Department</FormFieldLabel>
                     <input
                       value={form.dept || ""}
                       onChange={(e) => set("dept", e.target.value)}
@@ -274,7 +275,9 @@ export function RecordForm({ type, initial, categories, onClose, onSave }) {
               {type !== "categories" && (
                 <>
                   <label>
-                    {type === "team" ? "Biography" : "Description"}
+                    <FormFieldLabel>
+                      {type === "team" ? "Biography" : "Description"}
+                    </FormFieldLabel>
                     <textarea
                       rows="6"
                       value={form.desc || ""}
@@ -283,7 +286,9 @@ export function RecordForm({ type, initial, categories, onClose, onSave }) {
                   </label>
                   <div className={styles.mediaField}>
                     <label>
-                      {type === "team" ? "Team photo" : "Product image"}
+                      <FormFieldLabel>
+                        {type === "team" ? "Team photo" : "Product image"}
+                      </FormFieldLabel>
                       <input
                         type="file"
                         accept="image/jpeg,image/png,image/webp,image/avif"
@@ -319,8 +324,9 @@ export function RecordForm({ type, initial, categories, onClose, onSave }) {
           )}
           <div className={styles.formGrid}>
             <label>
-              Status
+              <FormFieldLabel required>Status</FormFieldLabel>
               <select
+                required
                 value={form.status}
                 onChange={(e) => set("status", e.target.value)}
               >
@@ -331,7 +337,7 @@ export function RecordForm({ type, initial, categories, onClose, onSave }) {
             </label>
             {type !== "content" && (
               <label>
-                Display order
+                <FormFieldLabel>Display order</FormFieldLabel>
                 <input
                   type="number"
                   min="0"

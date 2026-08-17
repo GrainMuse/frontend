@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Download, Eye, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { CalendarDays, Download, Eye, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import FormFieldLabel from "../../components/ui/FormFieldLabel";
 import {
   academyCrud,
   replaceProgramAssignments,
@@ -465,8 +466,9 @@ function ApplicationReviewDrawer({
             <ReviewField label="Background" value={application.background} />
           )}
           <label>
-            Decision status
+            <FormFieldLabel required>Decision status</FormFieldLabel>
             <select
+              required
               value={status}
               onChange={(event) => setStatus(event.target.value)}
             >
@@ -476,7 +478,7 @@ function ApplicationReviewDrawer({
             </select>
           </label>
           <label>
-            Private review notes
+            <FormFieldLabel>Private review notes</FormFieldLabel>
             <textarea
               rows="8"
               maxLength="10000"
@@ -691,7 +693,9 @@ function AcademyForm({ type, initial, academy, onClose, onSaved }) {
           )}
           <div className={styles.mediaField}>
             <label>
-              {type === "program" ? "Program image" : "Profile image"}
+              <FormFieldLabel>
+                {type === "program" ? "Program image" : "Profile image"}
+              </FormFieldLabel>
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/avif"
@@ -721,8 +725,9 @@ function AcademyForm({ type, initial, academy, onClose, onSaved }) {
           </div>
           <div className={styles.formGrid}>
             <label>
-              Status
+              <FormFieldLabel required>Status</FormFieldLabel>
               <select
+                required
                 value={form.status}
                 onChange={(event) => set("status", event.target.value)}
               >
@@ -732,7 +737,7 @@ function AcademyForm({ type, initial, academy, onClose, onSaved }) {
               </select>
             </label>
             <label>
-              Display order
+              <FormFieldLabel>Display order</FormFieldLabel>
               <input
                 type="number"
                 min="0"
@@ -786,7 +791,7 @@ function ProgramFields({ form, set, people, selected, onSelected }) {
         onChange={(v) => set("subtitle", v)}
       />
       <label>
-        Summary
+        <FormFieldLabel>Summary</FormFieldLabel>
         <textarea
           rows="3"
           value={form.summary}
@@ -794,7 +799,7 @@ function ProgramFields({ form, set, people, selected, onSelected }) {
         />
       </label>
       <label>
-        Description
+        <FormFieldLabel>Description</FormFieldLabel>
         <textarea
           rows="7"
           value={form.description}
@@ -893,7 +898,7 @@ function ProgramFields({ form, set, people, selected, onSelected }) {
         />
       </div>
       <fieldset className={styles.assignmentField}>
-        <legend>Resource persons</legend>
+        <legend><FormFieldLabel>Resource persons</FormFieldLabel></legend>
         {people.length ? (
           people.map((person) => {
             const assignment = selected.find(
@@ -998,7 +1003,7 @@ function PersonFields({ form, set }) {
         onChange={(v) => set("organization", v)}
       />
       <label>
-        Short biography
+        <FormFieldLabel>Short biography</FormFieldLabel>
         <textarea
           rows="4"
           value={form.shortBiography}
@@ -1006,7 +1011,7 @@ function PersonFields({ form, set }) {
         />
       </label>
       <label>
-        Full biography
+        <FormFieldLabel>Full biography</FormFieldLabel>
         <textarea
           rows="8"
           value={form.biography}
@@ -1042,21 +1047,33 @@ function PersonFields({ form, set }) {
   );
 }
 function Field({ label, value, onChange, ...props }) {
+  const isDateField = ["date", "datetime-local"].includes(props.type);
   return (
     <label>
-      {label}
-      <input
-        value={value || ""}
-        onChange={(event) => onChange(event.target.value)}
-        {...props}
-      />
+      <FormFieldLabel required={Boolean(props.required)}>{label}</FormFieldLabel>
+      {isDateField ? (
+        <span className={styles.dateField}>
+          <input
+            value={value || ""}
+            onChange={(event) => onChange(event.target.value)}
+            {...props}
+          />
+          <CalendarDays size={18} aria-hidden="true" />
+        </span>
+      ) : (
+        <input
+          value={value || ""}
+          onChange={(event) => onChange(event.target.value)}
+          {...props}
+        />
+      )}
     </label>
   );
 }
 function LineList({ label, value, onChange }) {
   return (
     <label>
-      {label}
+      <FormFieldLabel>{label}</FormFieldLabel>
       <textarea
         rows="5"
         value={(value || []).join("\n")}

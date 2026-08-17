@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ChevronRight, Leaf, ShieldCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
+import FormFieldLabel from "../../components/ui/FormFieldLabel";
 import styles from "../../pages/Admin.module.css";
 
 export function AdminLogin({ onReady }) {
@@ -36,7 +37,7 @@ export function AdminLogin({ onReady }) {
         </p>
         <form onSubmit={submit}>
           <label>
-            Email address
+            <FormFieldLabel required>Email address</FormFieldLabel>
             <input
               type="email"
               autoComplete="username"
@@ -46,7 +47,7 @@ export function AdminLogin({ onReady }) {
             />
           </label>
           <label>
-            Password
+            <FormFieldLabel required>Password</FormFieldLabel>
             <input
               type="password"
               autoComplete="current-password"
@@ -169,7 +170,7 @@ export function AcceptInvite() {
               {error || "This invitation is invalid or has expired."}
             </p>
             <a className={styles.secondary} href="/admin">
-              Return to sign in
+              Go to sign in
             </a>
           </>
         )}
@@ -177,7 +178,7 @@ export function AcceptInvite() {
           <form onSubmit={submit}>
             <p className={styles.inviteIdentity}>{session?.user.email}</p>
             <label>
-              New password
+              <FormFieldLabel required>New password</FormFieldLabel>
               <input
                 type="password"
                 autoComplete="new-password"
@@ -187,7 +188,7 @@ export function AcceptInvite() {
               />
             </label>
             <label>
-              Confirm password
+              <FormFieldLabel required>Confirm password</FormFieldLabel>
               <input
                 type="password"
                 autoComplete="new-password"
@@ -325,17 +326,19 @@ export function MfaGate({ onVerified, onSignOut }) {
         <>
           <p>Enter the current six-digit code from your authenticator app.</p>
           <form onSubmit={verify} className={styles.mfaForm}>
-            <input
-              aria-label="Authenticator code"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              pattern="[0-9]{6}"
-              maxLength="6"
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-              placeholder="000000"
-              required
-            />
+            <label>
+              <FormFieldLabel required>Authenticator code</FormFieldLabel>
+              <input
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="[0-9]{6}"
+                maxLength="6"
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                placeholder="000000"
+                required
+              />
+            </label>
             <button className={styles.primary} disabled={busy}>
               {busy ? "Verifying…" : "Verify code"}
             </button>

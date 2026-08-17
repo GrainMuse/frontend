@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  ArrowLeft,
   CalendarDays,
   CheckCircle2,
   Clock3,
@@ -14,6 +13,8 @@ import { Link, useParams } from "react-router-dom";
 import SEOHead from "../components/common/SEOHead";
 import ApplicantAuthForm from "../components/academy/ApplicantAuthForm";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
+import FormFieldLabel from "../components/ui/FormFieldLabel";
+import Breadcrumbs from "../components/ui/Breadcrumbs";
 import { useAcademyProgram } from "../hooks/useAcademyData";
 import { supabase } from "../lib/supabase";
 import {
@@ -57,9 +58,15 @@ export default function AcademyProgram() {
         {heroUrl && <img src={heroUrl} alt="" />}
         <div className={styles.heroShade} />
         <div className={`container ${styles.detailHeroContent}`}>
-          <Link to="/pathfinder-academy">
-            <ArrowLeft /> All programs
-          </Link>
+          <Breadcrumbs
+            inverse
+            className={styles.heroBreadcrumbs}
+            items={[
+              { label: "Home", to: "/" },
+              { label: "PATHFINDER Academy", to: "/pathfinder-academy" },
+              { label: program.title },
+            ]}
+          />
           <p>{program.subtitle || "PATHFINDER Academy"}</p>
           <h1>{program.title}</h1>
           <span>{program.summary}</span>
@@ -321,7 +328,7 @@ function ApplicationPanel({ program }) {
                 Applying as <strong>{session.user.email}</strong>
               </p>
               <label>
-                Full name
+                <FormFieldLabel required>Full name</FormFieldLabel>
                 <input
                   required
                   minLength="2"
@@ -334,7 +341,7 @@ function ApplicationPanel({ program }) {
               </label>
               <div className={styles.formGrid}>
                 <label>
-                  Phone
+                  <FormFieldLabel>Phone</FormFieldLabel>
                   <input
                     type="tel"
                     autoComplete="tel"
@@ -345,7 +352,7 @@ function ApplicationPanel({ program }) {
                   />
                 </label>
                 <label>
-                  Organization
+                  <FormFieldLabel>Organization</FormFieldLabel>
                   <input
                     autoComplete="organization"
                     value={form.organization}
@@ -356,7 +363,9 @@ function ApplicationPanel({ program }) {
                 </label>
               </div>
               <label>
-                Professional or educational background
+                <FormFieldLabel>
+                  Professional or educational background
+                </FormFieldLabel>
                 <textarea
                   rows="4"
                   maxLength="2000"
@@ -367,7 +376,9 @@ function ApplicationPanel({ program }) {
                 />
               </label>
               <label>
-                Why do you want to join?
+                <FormFieldLabel required>
+                  Why do you want to join?
+                </FormFieldLabel>
                 <textarea
                   required
                   minLength="20"
@@ -438,13 +449,19 @@ function Fact({ icon: Icon, label, value }) {
 function PageError({ message, onRetry }) {
   return (
     <div className={`container ${styles.pageState}`}>
+      <Breadcrumbs
+        items={[
+          { label: "Home", to: "/" },
+          { label: "PATHFINDER Academy", to: "/pathfinder-academy" },
+          { label: "Program unavailable" },
+        ]}
+      />
       <h1>{message}</h1>
       {onRetry && (
         <button className="btn btn-outline" onClick={onRetry}>
           Try again
         </button>
       )}
-      <Link to="/pathfinder-academy">Return to the academy</Link>
     </div>
   );
 }

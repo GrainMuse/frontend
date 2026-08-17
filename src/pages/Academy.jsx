@@ -111,7 +111,7 @@ export default function Academy() {
         </div>
       </section>
 
-      <section className={`section-pad ${styles.peopleSection}`}>
+      <section id="resource-persons" className={`section-pad ${styles.peopleSection}`}>
         <div className="container">
           <header className={styles.sectionHeader}>
             <div>
@@ -166,7 +166,7 @@ function ProgramCard({ program }) {
       <div className={styles.programBody}>
         <p>{program.subtitle}</p>
         <h3>{program.title}</h3>
-        <p className={styles.summary}>{program.summary}</p>
+        {/* <p className={styles.summary}>{program.summary}</p> */}
         <ul>
           {program.startDate && (
             <li>
