@@ -224,6 +224,7 @@
 
 .detailHeroContent>a,
 .backLink {
+  padding: 0px 50px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
