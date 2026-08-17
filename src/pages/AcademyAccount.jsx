@@ -3,6 +3,7 @@ import { ArrowRight, BookOpen, CalendarDays, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 import ApplicantAuthForm from "../components/academy/ApplicantAuthForm";
 import SEOHead from "../components/common/SEOHead";
+import FormFieldLabel from "../components/ui/FormFieldLabel";
 import { supabase } from "../lib/supabase";
 import {
   fetchMyAcademyApplications,
@@ -181,7 +182,7 @@ function RecoveryForm({ onComplete }) {
     <form onSubmit={submit}>
       <h3>Reset password</h3>
       <label>
-        New password
+        <FormFieldLabel required>New password</FormFieldLabel>
         <input
           type="password"
           minLength="8"

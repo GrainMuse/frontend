@@ -1,6 +1,7 @@
-import { ArrowLeft, Linkedin, Mail, UserRound } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Linkedin, Mail, UserRound } from "lucide-react";
+import { useParams } from "react-router-dom";
 import SEOHead from "../components/common/SEOHead";
+import Breadcrumbs from "../components/ui/Breadcrumbs";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 import { useAcademyResourcePerson } from "../hooks/useAcademyData";
 import { resolveMediaUrl } from "../services/mediaService";
@@ -18,8 +19,14 @@ export default function AcademyResourcePerson() {
   if (error || !person)
     return (
       <div className={`container ${styles.pageState}`}>
+        <Breadcrumbs
+          items={[
+            { label: "Home", to: "/" },
+            { label: "PATHFINDER Academy", to: "/pathfinder-academy" },
+            { label: "Resource person unavailable" },
+          ]}
+        />
         <h1>{error || "This profile is not available."}</h1>
-        <Link to="/pathfinder-academy">Return to the academy</Link>
       </div>
     );
   const image = resolveMediaUrl(person.imagePath);
@@ -50,9 +57,17 @@ export default function AcademyResourcePerson() {
         }}
       />
       <section className={`section-pad ${styles.profileSection}`}>
-        <Link className={styles.backLink} to="/pathfinder-academy">
-          <ArrowLeft /> PATHFINDER Academy
-        </Link>
+        <div className="container">
+          <Breadcrumbs
+            className={styles.profileBreadcrumbs}
+            items={[
+              { label: "Home", to: "/" },
+              { label: "PATHFINDER Academy", to: "/pathfinder-academy" },
+              { label: "Resource persons", to: "/pathfinder-academy#resource-persons" },
+              { label: person.name },
+            ]}
+          />
+        </div>
         <div className={`container ${styles.profileGrid}`}>
           <div className={styles.profileImage}>
             {image ? (

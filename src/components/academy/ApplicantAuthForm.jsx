@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { supabase } from "../../lib/supabase";
+import FormFieldLabel from "../ui/FormFieldLabel";
 import styles from "../../pages/Academy.module.css";
 
 export default function ApplicantAuthForm({ returnPath = "/pathfinder-academy/account" }) {
@@ -59,17 +60,17 @@ export default function ApplicantAuthForm({ returnPath = "/pathfinder-academy/ac
       </h3>
       {mode === "signup" && (
         <label>
-          Full name
+          <FormFieldLabel required>Full name</FormFieldLabel>
           <input required value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} />
         </label>
       )}
       <label>
-        Email
+        <FormFieldLabel required>Email</FormFieldLabel>
         <input type="email" required value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
       </label>
       {mode !== "reset" && (
         <label>
-          Password
+          <FormFieldLabel required>Password</FormFieldLabel>
           <input type="password" required minLength="8" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} />
         </label>
       )}
@@ -89,7 +90,7 @@ export default function ApplicantAuthForm({ returnPath = "/pathfinder-academy/ac
         )}
         {mode === "reset" && (
           <button type="button" className={styles.authSwitch} onClick={() => { setMode("signin"); setMessage(""); }}>
-            Return to sign in
+            Sign in
           </button>
         )}
       </div>

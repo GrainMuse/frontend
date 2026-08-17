@@ -23,6 +23,7 @@ import {
 } from "../services/contactService";
 import { useContent } from "../context/contentStore";
 import SEOHead from "../components/common/SEOHead";
+import FormFieldLabel from "../components/ui/FormFieldLabel";
 import styles from "./Contact.module.css";
 
 const ENQUIRY_TYPES = [
@@ -266,7 +267,8 @@ export default function Contact() {
 
                   <div className={styles.formRow}>
                     <FormField
-                      label="Your Name *"
+                      label="Your Name"
+                      required
                       name="name"
                       placeholder="Full name"
                       value={form.name}
@@ -275,7 +277,8 @@ export default function Contact() {
                       disabled={status === "sending" || remaining === 0}
                     />
                     <FormField
-                      label="Email Address *"
+                      label="Email Address"
+                      required
                       name="email"
                       type="email"
                       placeholder="your@email.com"
@@ -288,7 +291,7 @@ export default function Contact() {
 
                   <div className={styles.formRow}>
                     <FormField
-                      label="Phone (optional)"
+                      label="Phone"
                       name="phone"
                       type="tel"
                       placeholder="+94 ..."
@@ -299,7 +302,7 @@ export default function Contact() {
                     />
                     <div className="form-field">
                       <label className="form-label" htmlFor="type">
-                        Enquiry Type
+                        <FormFieldLabel>Enquiry Type</FormFieldLabel>
                       </label>
                       <select
                         id="type"
@@ -321,7 +324,7 @@ export default function Contact() {
 
                   <div className="form-field">
                     <label className="form-label" htmlFor="message">
-                      Message *
+                      <FormFieldLabel required>Message</FormFieldLabel>
                       <span className={styles.charCount}>
                         {form.message.length}/4000
                       </span>
@@ -334,6 +337,7 @@ export default function Contact() {
                       value={form.message}
                       onChange={handleChange}
                       maxLength={4000}
+                      required
                       disabled={status === "sending" || remaining === 0}
                       aria-invalid={!!errors.message}
                       aria-describedby={
@@ -354,7 +358,9 @@ export default function Contact() {
                   {usesSupabaseContact && (
                     <div className={styles.securityCheck}>
                       <span className={styles.securityCheckLabel}>
-                        Security verification *
+                        <FormFieldLabel required>
+                          Security verification
+                        </FormFieldLabel>
                       </span>
                       <TurnstileWidget
                         ref={turnstileRef}
@@ -447,11 +453,12 @@ function FormField({
   onChange,
   error,
   disabled,
+  required = false,
 }) {
   return (
     <div className="form-field">
       <label className="form-label" htmlFor={name}>
-        {label}
+        <FormFieldLabel required={required}>{label}</FormFieldLabel>
       </label>
       <input
         id={name}
@@ -462,6 +469,7 @@ function FormField({
         value={value}
         onChange={onChange}
         disabled={disabled}
+        required={required}
         aria-invalid={!!error}
         aria-describedby={error ? `${name}-error` : undefined}
         autoComplete={

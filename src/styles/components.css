@@ -1,6 +1,4 @@
-/* ============================================================
-   GRAIN MUSE — Component Styles
-   ============================================================ */
+@import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css');
 
 /* ── Buttons ────────────────────────────────────────────────── */
 .btn {
@@ -178,6 +176,22 @@
   text-transform: uppercase;
   color: var(--gm-earth);
 }
+.field-label-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.field-requirement {
+  flex-shrink: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.field-requirement.is-required { color: var(--gm-rust); }
+.field-requirement.is-optional { color: var(--gm-earth); opacity: 0.68; }
 .form-input,
 .form-textarea,
 .form-select {
