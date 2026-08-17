@@ -50,6 +50,9 @@ export default function AcademyResourcePerson() {
         }}
       />
       <section className={`section-pad ${styles.profileSection}`}>
+        <Link className={styles.backLink} to="/pathfinder-academy">
+          <ArrowLeft /> PATHFINDER Academy
+        </Link>
         <div className={`container ${styles.profileGrid}`}>
           <div className={styles.profileImage}>
             {image ? (
@@ -62,9 +65,6 @@ export default function AcademyResourcePerson() {
             )}
           </div>
           <article>
-            <Link className={styles.backLink} to="/pathfinder-academy">
-              <ArrowLeft /> PATHFINDER Academy
-            </Link>
             <p className="section-eyebrow">Resource person</p>
             <h1 className="display-md">{person.name}</h1>
             <h2>{person.professionalTitle}</h2>
