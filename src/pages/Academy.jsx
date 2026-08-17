@@ -215,14 +215,14 @@ function ResourcePersonCard({ person }) {
           {person.professionalTitle}
           {person.organization ? ` · ${person.organization}` : ""}
         </p>
-        {person.shortBiography && <small>{person.shortBiography}</small>}
+        {/* {person.shortBiography && <small>{person.shortBiography}</small>}
         {person.expertise?.length > 0 && (
           <div className={styles.personExpertise} aria-label="Areas of expertise">
             {person.expertise.slice(0, 3).map((item) => (
               <em key={item}>{item}</em>
             ))}
           </div>
-        )}
+        )} */}
         <div className={styles.personLinks}>
           <Link to={`/pathfinder-academy/resource-persons/${person.slug}`}>
             View profile <ArrowRight />
