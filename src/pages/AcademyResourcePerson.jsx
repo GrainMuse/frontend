@@ -88,7 +88,9 @@ export default function AcademyResourcePerson() {
               {(person.biography || person.shortBiography)
                 .split(/\n\s*\n/)
                 .map((item) => (
-                  <p key={item}>{item}</p>
+                  <p className="justifiedText" key={item}>
+                    {item}
+                  </p>
                 ))}
             </div>
             {person.expertise?.length > 0 && (

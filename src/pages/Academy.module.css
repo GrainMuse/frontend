@@ -87,6 +87,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
   transition: transform var(--t-slow);
 }
 
@@ -416,6 +417,7 @@
   height: 100%;
   object-fit: cover;
   object-position: center top;
+  display: block;
 }
 
 .personImage svg {
@@ -813,6 +815,12 @@
   margin-bottom: 48px;
 }
 
+.justifiedText {
+  text-align: justify;
+  line-height: 1.6;
+  text-justify: inter-word;
+}
+
 @media (max-width: 1000px) {
 
   .programGrid,
@@ -846,6 +854,11 @@
     grid-template-columns: 1fr;
   }
 
+  .personImage
+  .programImage {
+    height: 200px;
+  }
+
   .sectionHeader {
     align-items: start;
     flex-direction: column;
@@ -870,5 +883,12 @@
 
   .myApplication>img {
     max-height: 240px;
+  }
+}
+
+@media (max-width: 480px) {
+  .personImage
+  .programImage {
+    height: 170px;
   }
 }
