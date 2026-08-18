@@ -79,7 +79,9 @@ export default function AcademyProgram() {
             <p className="section-eyebrow">About the program</p>
             <h2 className="display-sm">A practical path forward</h2>
             {paragraphs(program.description).map((paragraph) => (
-              <p key={paragraph}>{paragraph}</p>
+              <p className="justifiedText" key={paragraph}>
+                {paragraph}
+              </p>
             ))}
             <ListSection title="Objectives" values={program.objectives} />
             <ListSection title="What you will gain" values={program.outcomes} />
