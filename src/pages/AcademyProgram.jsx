@@ -79,7 +79,7 @@ export default function AcademyProgram() {
             <p className="section-eyebrow">About the program</p>
             <h2 className="display-sm">A practical path forward</h2>
             {paragraphs(program.description).map((paragraph) => (
-              <p className="justifiedText" key={paragraph}>
+              <p className={styles.justifiedText} key={paragraph}>
                 {paragraph}
               </p>
             ))}
