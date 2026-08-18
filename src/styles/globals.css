@@ -191,7 +191,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .section-pad {
-  padding-block: var(--space-4xl);
+  padding-block: var(--space-3xl);
 }
 .section-pad-sm {
   padding-block: var(--space-2xl);
