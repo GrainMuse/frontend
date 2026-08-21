@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import ApplicantAuthForm from "../components/academy/ApplicantAuthForm";
 import SEOHead from "../components/common/SEOHead";
 import FormFieldLabel from "../components/ui/FormFieldLabel";
+import ProgressiveImage from "../components/ui/ProgressiveImage";
 import { supabase } from "../lib/supabase";
 import {
   fetchMyAcademyApplications,
@@ -211,7 +212,13 @@ function ApplicationCard({ application, onWithdraw }) {
   );
   return (
     <article className={styles.myApplication}>
-      {image && <img src={image} alt="" />}
+      {image && (
+        <ProgressiveImage
+          src={image}
+          alt=""
+          frameClassName={styles.applicationImage}
+        />
+      )}
       <div>
         <span className={styles.statusBadge}>{application.status}</span>
         <h2>{program?.title || "PATHFINDER Academy program"}</h2>
