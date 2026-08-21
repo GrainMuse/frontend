@@ -162,7 +162,11 @@ function ProgramCard({ program }) {
     <article className={styles.programCard}>
       <div className={styles.programImage}>
         {imageUrl ? (
-          <ProgressiveImage src={imageUrl} alt="" />
+          <ProgressiveImage
+            src={imageUrl}
+            alt=""
+            frameClassName={styles.cardMediaFrame}
+          />
         ) : (
           <BookOpen />
         )}
@@ -209,6 +213,7 @@ function ResourcePersonCard({ person }) {
           <ProgressiveImage
             src={imageUrl}
             alt={`${person.name}, ${person.professionalTitle}`}
+            frameClassName={styles.cardMediaFrame}
           />
         ) : (
           <UserRound aria-hidden="true" />

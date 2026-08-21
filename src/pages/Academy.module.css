@@ -83,6 +83,15 @@
   overflow: hidden;
 }
 
+.programImage>.cardMediaFrame,
+.personImage>.cardMediaFrame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
 .programImage img {
   width: 100%;
   height: 100%;
@@ -109,6 +118,7 @@
   border-radius: 20px;
   color: var(--gm-cream);
   background: #2c1a10d9;
+  z-index: 2;
   font-size: .75rem;
   text-transform: uppercase;
   letter-spacing: .12em;
@@ -415,6 +425,7 @@
   display: grid;
   place-items: center;
   color: var(--gm-cream);
+  position: relative;
   overflow: hidden;
 }
 
@@ -759,9 +770,18 @@
   border-radius: 18px;
   background: var(--gm-moss);
   color: var(--gm-cream);
+  position: relative;
   display: grid;
   place-items: center;
   overflow: hidden;
+}
+
+.profileImage>.profileImageFrame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
 }
 
 .profileImage img {
