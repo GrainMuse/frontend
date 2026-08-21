@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import SEOHead from "../components/common/SEOHead";
 import Breadcrumbs from "../components/ui/Breadcrumbs";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
+import ProgressiveImage from "../components/ui/ProgressiveImage";
 import { useAcademyResourcePerson } from "../hooks/useAcademyData";
 import { resolveMediaUrl } from "../services/mediaService";
 import styles from "./Academy.module.css";
@@ -71,9 +72,10 @@ export default function AcademyResourcePerson() {
         <div className={`container ${styles.profileGrid}`}>
           <div className={styles.profileImage}>
             {image ? (
-              <img
+              <ProgressiveImage
                 src={image}
                 alt={`${person.name}, ${person.professionalTitle}`}
+                eager
               />
             ) : (
               <UserRound />

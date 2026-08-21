@@ -13,6 +13,7 @@ import { Link, useParams } from "react-router-dom";
 import SEOHead from "../components/common/SEOHead";
 import ApplicantAuthForm from "../components/academy/ApplicantAuthForm";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
+import ProgressiveImage from "../components/ui/ProgressiveImage";
 import FormFieldLabel from "../components/ui/FormFieldLabel";
 import Breadcrumbs from "../components/ui/Breadcrumbs";
 import { useAcademyProgram } from "../hooks/useAcademyData";
@@ -55,7 +56,14 @@ export default function AcademyProgram() {
         structuredData={programSchema(program, heroUrl)}
       />
       <section className={styles.detailHero}>
-        {heroUrl && <img src={heroUrl} alt="" />}
+        {heroUrl && (
+          <ProgressiveImage
+            src={heroUrl}
+            alt=""
+            eager
+            frameClassName={styles.detailHeroImage}
+          />
+        )}
         <div className={styles.heroShade} />
         <div className={`container ${styles.detailHeroContent}`}>
           <Breadcrumbs
@@ -179,10 +187,9 @@ function ResourcePeople({ people }) {
               <article key={person.id} className={styles.personCard}>
                 <div className={styles.personImage}>
                   {image ? (
-                    <img
+                    <ProgressiveImage
                       src={image}
                       alt={`${person.name}, ${person.professionalTitle}`}
-                      loading="lazy"
                     />
                   ) : (
                     <UserRound />
@@ -198,7 +205,7 @@ function ResourcePeople({ people }) {
                   {person.sessionTopic && (
                     <strong>{person.sessionTopic}</strong>
                   )}
-                  <small>{person.shortBiography}</small>
+                  {/* <small>{person.shortBiography}</small> */}
                   <div className={styles.personLinks}>
                     <Link
                       to={`/pathfinder-academy/resource-persons/${person.slug}`}

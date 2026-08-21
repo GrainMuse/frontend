@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import SEOHead from "../components/common/SEOHead";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 import PageHero from "../components/ui/PageHero";
+import ProgressiveImage from "../components/ui/ProgressiveImage";
 import {
   useAcademyPrograms,
   useAcademyResourcePersons,
@@ -160,7 +161,11 @@ function ProgramCard({ program }) {
   return (
     <article className={styles.programCard}>
       <div className={styles.programImage}>
-        {imageUrl ? <img src={imageUrl} alt="" loading="lazy" /> : <BookOpen />}
+        {imageUrl ? (
+          <ProgressiveImage src={imageUrl} alt="" />
+        ) : (
+          <BookOpen />
+        )}
         <span>{program.deliveryMode || "Academy program"}</span>
       </div>
       <div className={styles.programBody}>
@@ -199,10 +204,9 @@ function ResourcePersonCard({ person }) {
     <article className={styles.personCard}>
       <div className={styles.personImage}>
         {imageUrl ? (
-          <img
+          <ProgressiveImage
             src={imageUrl}
             alt={`${person.name}, ${person.professionalTitle}`}
-            loading="lazy"
           />
         ) : (
           <UserRound aria-hidden="true" />
