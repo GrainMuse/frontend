@@ -190,6 +190,7 @@ function ResourcePeople({ people }) {
                     <ProgressiveImage
                       src={image}
                       alt={`${person.name}, ${person.professionalTitle}`}
+                      frameClassName={styles.cardMediaFrame}
                     />
                   ) : (
                     <UserRound />

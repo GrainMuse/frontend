@@ -76,6 +76,7 @@ export default function AcademyResourcePerson() {
                 src={image}
                 alt={`${person.name}, ${person.professionalTitle}`}
                 eager
+                frameClassName={styles.profileImageFrame}
               />
             ) : (
               <UserRound />
