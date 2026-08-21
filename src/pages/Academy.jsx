@@ -166,7 +166,9 @@ function ProgramCard({ program }) {
         ) : (
           <BookOpen />
         )}
-        <span>{program.deliveryMode || "Academy program"}</span>
+        <span className={styles.programBadge}>
+          {program.deliveryMode || "Academy program"}
+        </span>
       </div>
       <div className={styles.programBody}>
         <p>{program.subtitle}</p>
@@ -213,7 +215,7 @@ function ResourcePersonCard({ person }) {
         )}
       </div>
       <div>
-        <span>Academy resource person</span>
+        <span className={styles.personRole}>Academy resource person</span>
         <h3>{person.name}</h3>
         <p>
           {person.professionalTitle}

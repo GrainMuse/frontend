@@ -101,7 +101,7 @@
   opacity: .7;
 }
 
-.programImage span {
+.programBadge {
   position: absolute;
   left: 18px;
   bottom: 18px;
@@ -437,7 +437,7 @@
   display: grid;
 }
 
-.personCard span {
+.personRole {
   font-size: .75rem;
   color: var(--gm-gold);
   letter-spacing: .12em;
