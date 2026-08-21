@@ -196,7 +196,7 @@ function ResourcePeople({ people }) {
                   )}
                 </div>
                 <div>
-                  <span>{person.role}</span>
+                  <span className={styles.personRole}>{person.role}</span>
                   <h3>{person.name}</h3>
                   <p>
                     {person.professionalTitle}
