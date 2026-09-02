@@ -1,0 +1,38 @@
+.page {
+  min-height: calc(100vh - var(--nav-height));
+  padding: calc(var(--nav-height) + clamp(55px, 9vw, 110px)) var(--container-pad) clamp(70px, 10vw, 130px);
+  background: var(--gm-parchment);
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+.ambientShape { position: absolute; width: 560px; height: 560px; border-radius: 50%; right: -230px; top: 9%; background: rgba(191,154,86,.13); }
+.shell { width: min(100%, 1040px); display: grid; grid-template-columns: .9fr 1.1fr; gap: clamp(46px, 8vw, 120px); align-items: center; position: relative; }
+.intro { padding-bottom: 15px; }
+.intro h1 { font-size: clamp(3rem, 6vw, 5.9rem); letter-spacing: -.025em; margin: 14px 0 25px; max-width: 570px; }
+.introCopy { color: var(--gm-earth); line-height: 1.8; max-width: 440px; }
+.trustList { display: grid; gap: 14px; margin-top: 38px; color: var(--gm-bark); font-size: .88rem; }
+.trustList p { display: flex; gap: 10px; align-items: center; }
+.trustList svg { color: var(--gm-moss); }
+.card { background: var(--gm-cream); border: 1px solid rgba(213,200,175,.8); border-radius: 18px; padding: clamp(27px, 4vw, 46px); box-shadow: var(--shadow-lg); }
+.cardHeader { display: flex; gap: 15px; align-items: flex-start; }
+.icon { width: 42px; height: 42px; display: grid; place-items: center; background: var(--gm-deep); color: var(--gm-gold); border-radius: 50%; flex: 0 0 auto; }
+.cardKicker { font-size: .72rem; text-transform: uppercase; letter-spacing: .18em; color: var(--gm-gold); font-weight: 650; margin-bottom: 4px; }
+.card h2 { font-size: clamp(1.9rem, 3vw, 2.55rem); }
+.helper { color: var(--gm-earth); font-size: .88rem; line-height: 1.6; margin: 22px 0 26px; }
+.form { display: grid; gap: 18px; }
+.form label { display: grid; gap: 7px; color: var(--gm-earth); font-size: .76rem; font-weight: 600; }
+.form input { width: 100%; padding: 13px 14px; border: 1px solid var(--gm-mist); border-radius: 7px; background: #fffdf8; color: var(--gm-deep); transition: border-color var(--t-base), box-shadow var(--t-base); }
+.form input:focus { border-color: var(--gm-gold); outline: none; box-shadow: 0 0 0 3px rgba(191,154,86,.16); }
+.inputWrap { position: relative; display: block; }
+.inputWrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--gm-earth); pointer-events: none; }
+.inputWrap input { padding-left: 42px; }
+.submit { width: 100%; justify-content: center; margin-top: 3px; gap: 10px; }
+.error { color: #a53b31; font-size: .82rem; line-height: 1.45; }
+.success { display: flex; gap: 8px; align-items: flex-start; padding: 12px; border-radius: 7px; background: #e2eee2; color: #3e6a45; font-size: .82rem; line-height: 1.45; }
+.success svg { flex: 0 0 auto; margin-top: 1px; }
+.links { display: flex; justify-content: center; flex-wrap: wrap; gap: 9px; margin-top: 23px; font-size: .79rem; color: var(--gm-earth); }
+.links button, .links a { text-decoration: underline; text-underline-offset: 3px; }
+.links button:hover, .links a:hover { color: var(--gm-deep); }
+@media (max-width: 760px) { .shell { grid-template-columns: 1fr; gap: 35px; } .intro h1 { font-size: clamp(3rem, 14vw, 4.4rem); } .trustList { margin-top: 25px; } .card { box-shadow: var(--shadow-md); } }

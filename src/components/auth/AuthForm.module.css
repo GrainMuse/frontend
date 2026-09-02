@@ -1,0 +1,21 @@
+.form { display: grid; gap: 18px; }
+.form label { display: grid; gap: 7px; color: var(--gm-earth); font-size: .76rem; font-weight: 600; }
+.form input { width: 100%; padding: 13px 14px; border: 1px solid var(--gm-mist); border-radius: 7px; background: #fffdf8; color: var(--gm-deep); transition: border-color var(--t-base), box-shadow var(--t-base); }
+.form input:focus { border-color: var(--gm-gold); outline: none; box-shadow: 0 0 0 3px rgba(191,154,86,.16); }
+.inputWrap { display: block; position: relative; }
+.inputWrap > svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--gm-earth); pointer-events: none; }
+.inputWrap > input { padding-left: 42px; }
+.inputWrap input[type="password"], .inputWrap input[type="text"] { padding-right: 44px; }
+.passwordToggle { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); color: var(--gm-earth); padding: 5px; display: grid; place-items: center; }
+.passwordToggle:hover { color: var(--gm-deep); }
+.passwordHint { display: flex; gap: 15px; font-size: .7rem; font-weight: 500; color: var(--gm-mist); }
+.passwordHint span::before { content: "○"; margin-right: 5px; }
+.passwordHint .valid { color: var(--gm-moss); }
+.passwordHint .valid::before { content: "✓"; }
+.submit { width: 100%; justify-content: center; gap: 10px; margin-top: 3px; }
+.error { color: #a53b31; font-size: .82rem; line-height: 1.45; }
+.success { display: flex; gap: 8px; align-items: flex-start; padding: 12px; border-radius: 7px; background: #e2eee2; color: #3e6a45; font-size: .82rem; line-height: 1.45; }
+.success svg { flex: 0 0 auto; margin-top: 1px; }
+.legal, .switch { color: var(--gm-earth); text-align: center; font-size: .73rem; line-height: 1.55; }
+.switch { font-size: .79rem; }
+.switch a { color: var(--gm-deep); font-weight: 650; text-decoration: underline; text-underline-offset: 3px; }
