@@ -17,6 +17,7 @@ export default function SignIn() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [activeSession, setActiveSession] = useState(null);
 
   const returnPath = location.state?.from || DEFAULT_RETURN_PATH;
 
@@ -24,7 +25,10 @@ export default function SignIn() {
     if (!supabase) return undefined;
     let active = true;
     supabase.auth.getSession().then(({ data }) => {
-      if (active && data.session) navigate(returnPath, { replace: true });
+      if (active && data.session) {
+        setActiveSession(data.session);
+        setMessage(`You’re already signed in as ${data.session.user.email}.`);
+      }
     });
     return () => { active = false; };
   }, [navigate, returnPath]);
@@ -53,6 +57,12 @@ export default function SignIn() {
         if (resetError) throw resetError;
         setMessage("If an account exists for this email, a recovery link has been sent.");
       } else {
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData.session) {
+          setActiveSession(sessionData.session);
+          setMessage(`You’re already signed in as ${sessionData.session.user.email}.`);
+          return;
+        }
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
         navigate(returnPath, { replace: true });
@@ -62,6 +72,26 @@ export default function SignIn() {
     } finally {
       setBusy(false);
     }
+  }
+
+  async function continueToAccount() {
+    navigate(returnPath, { replace: true });
+  }
+
+  async function useAnotherAccount() {
+    if (!supabase) return;
+    setBusy(true);
+    setError("");
+    setMessage("");
+    const { error: signOutError } = await supabase.auth.signOut();
+    setBusy(false);
+    if (signOutError) {
+      setError("We could not switch accounts. Please try again.");
+      return;
+    }
+    setActiveSession(null);
+    setEmail("");
+    setPassword("");
   }
 
   return (
@@ -106,6 +136,12 @@ export default function SignIn() {
               )}
               {error && <p className={styles.error} role="alert">{error}</p>}
               {message && <p className={styles.success} role="status"><CheckCircle2 size={17} /> {message}</p>}
+              {activeSession && mode === "signin" && (
+                <div className={styles.sessionActions}>
+                  <button type="button" className="btn btn-primary" onClick={continueToAccount}>Continue to my account</button>
+                  <button type="button" className={styles.secondaryAction} onClick={useAnotherAccount} disabled={busy}>Use another account</button>
+                </div>
+              )}
               <button className={`btn btn-primary ${styles.submit}`} disabled={busy}>
                 {busy ? "Please wait…" : mode === "reset" ? "Send recovery link" : "Sign in"} <ArrowRight size={17} />
               </button>

@@ -32,6 +32,10 @@
 .error { color: #a53b31; font-size: .82rem; line-height: 1.45; }
 .success { display: flex; gap: 8px; align-items: flex-start; padding: 12px; border-radius: 7px; background: #e2eee2; color: #3e6a45; font-size: .82rem; line-height: 1.45; }
 .success svg { flex: 0 0 auto; margin-top: 1px; }
+.sessionActions { display: grid; gap: 10px; }
+.sessionActions .btn { justify-content: center; }
+.secondaryAction { color: var(--gm-earth); font-size: .8rem; text-decoration: underline; text-underline-offset: 3px; }
+.secondaryAction:hover { color: var(--gm-deep); }
 .links { display: flex; justify-content: center; flex-wrap: wrap; gap: 9px; margin-top: 23px; font-size: .79rem; color: var(--gm-earth); }
 .links button, .links a { text-decoration: underline; text-underline-offset: 3px; }
 .links button:hover, .links a:hover { color: var(--gm-deep); }

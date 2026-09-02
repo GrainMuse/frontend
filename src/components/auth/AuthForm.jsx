@@ -54,6 +54,12 @@ export default function AuthForm({ returnPath = "/pathfinder-academy/account" })
         },
       });
       if (signUpError) throw signUpError;
+      // Supabase may return a user with no identities for an email that is
+      // already registered when email confirmation is enabled.
+      if (data.user?.identities && data.user.identities.length === 0) {
+        setMessage("An account with this email already exists. Please sign in instead or use password recovery.");
+        return;
+      }
       if (data.session) {
         navigate(returnPath, { replace: true });
       } else {
@@ -61,7 +67,10 @@ export default function AuthForm({ returnPath = "/pathfinder-academy/account" })
         setForm((current) => ({ ...current, password: "", confirmPassword: "" }));
       }
     } catch (authError) {
-      setError(authError.message || "We could not create your account. Please try again.");
+      const duplicateEmail = /already registered|already exists|user already/i.test(authError.message || "");
+      setError(duplicateEmail
+        ? "An account with this email already exists. Please sign in instead or use password recovery."
+        : authError.message || "We could not create your account. Please try again.");
     } finally {
       setBusy(false);
     }

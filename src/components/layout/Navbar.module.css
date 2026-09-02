@@ -95,13 +95,25 @@
 }
 .navCta { display: inline-flex; }
 .signInLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--gm-deep);
+  border-radius: var(--radius-pill);
   color: var(--gm-deep);
-  font-size: .8rem;
-  font-weight: 600;
-  letter-spacing: .04em;
-  transition: color var(--t-base);
+  font-size: .9rem;
+  font-weight: 650;
+  letter-spacing: .05em;
+  transition: background var(--t-base), color var(--t-base), transform var(--t-base), box-shadow var(--t-base);
 }
-.signInLink:hover { color: var(--gm-gold); }
+.signInLink:hover {
+  background: var(--gm-deep);
+  color: var(--gm-cream);
+  box-shadow: 0 6px 18px rgba(44,26,16,.18);
+  transform: translateY(-1px);
+}
 
 /* Hamburger */
 .hamburger {
