@@ -59,6 +59,9 @@ export default function Navbar() {
 
           {/* CTA + Hamburger */}
           <div className={styles.navActions}>
+            <Link to="/signin" className={styles.signInLink}>
+              Sign in
+            </Link>
             <Link
               to="/contact"
               className={`btn btn-primary btn-sm ${styles.navCta}`}
@@ -105,6 +108,9 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
+          <Link to="/signin" className={styles.mobileSignIn}>
+            Sign in to your account <span aria-hidden="true">↗</span>
+          </Link>
           <Link to="/contact" className={`btn btn-gold ${styles.mobileCta}`}>
             Get in Touch
           </Link>

@@ -16,6 +16,8 @@ import Academy from "./pages/Academy";
 import AcademyProgram from "./pages/AcademyProgram";
 import AcademyResourcePerson from "./pages/AcademyResourcePerson";
 import AcademyAccount from "./pages/AcademyAccount";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
 
 export default function App() {
   const location = useLocation();
@@ -99,6 +101,22 @@ export default function App() {
               element={
                 <PageTransition variant="slideUp">
                   <Contact />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/signin"
+              element={
+                <PageTransition variant="slideUp">
+                  <SignIn />
+                </PageTransition>
+              }
+            />
+            <Route
+              path="/signup"
+              element={
+                <PageTransition variant="slideUp">
+                  <SignUp />
                 </PageTransition>
               }
             />

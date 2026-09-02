@@ -94,6 +94,14 @@
   flex-shrink: 0;
 }
 .navCta { display: inline-flex; }
+.signInLink {
+  color: var(--gm-deep);
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  transition: color var(--t-base);
+}
+.signInLink:hover { color: var(--gm-gold); }
 
 /* Hamburger */
 .hamburger {
@@ -191,6 +199,18 @@
   text-align: center;
   margin-top: 36px;
 }
+.mobileSignIn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 0 0;
+  color: var(--gm-deep);
+  font-size: .85rem;
+  font-weight: 600;
+  border-top: 1px solid var(--gm-warm);
+  margin-top: 26px;
+}
+.mobileSignIn span { color: var(--gm-gold); font-size: 1.1rem; }
 .mobileFootNote {
   margin-top: 20px;
   font-size: 0.8rem;
